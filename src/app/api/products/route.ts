@@ -35,8 +35,12 @@ export async function GET() {
     }));
 
     return NextResponse.json(formattedProducts);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('DATABASE_ERROR_LOG:', error);
+    return NextResponse.json({ 
+      error: 'Internal Server Error', 
+      details: error.message,
+      code: error.code 
+    }, { status: 500 });
   }
 }
