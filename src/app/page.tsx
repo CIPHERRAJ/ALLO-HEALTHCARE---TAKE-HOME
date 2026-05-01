@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useSession, signIn, signOut } from "next-auth/react";
 
 interface Stock {
   warehouseId: string;
@@ -26,6 +27,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { data: session } = useSession();
 
   useEffect(() => {
     fetchProducts();
@@ -45,6 +47,12 @@ export default function ProductsPage() {
   };
 
   const handleReserve = async (productId: string, warehouseId: string) => {
+    if (!session) {
+      toast.error('Please login to reserve items');
+      signIn('google');
+      return;
+    }
+
     try {
       const res = await fetch('/api/reservations', {
         method: 'POST',
@@ -61,6 +69,12 @@ export default function ProductsPage() {
 
       if (res.status === 409) {
         toast.error('Not enough stock available');
+        return;
+      }
+
+      if (res.status === 401) {
+        toast.error('Session expired. Please login again.');
+        signIn('google');
         return;
       }
 
@@ -81,7 +95,18 @@ export default function ProductsPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-8">Available Products</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Available Products</h1>
+        {session ? (
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">Hi, {session.user?.name}</span>
+            <Button variant="outline" size="sm" onClick={() => signOut()}>Logout</Button>
+          </div>
+        ) : (
+          <Button size="sm" onClick={() => signIn('google')}>Login with Google</Button>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
           <Card key={product.id} className="flex flex-col">

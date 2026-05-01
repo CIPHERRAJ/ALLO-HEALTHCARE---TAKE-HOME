@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 import { Toaster } from "@/components/ui/sonner";
+import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "Allo Inventory",
@@ -30,8 +31,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        <Toaster />
+        <Providers>
+          {children}
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );
