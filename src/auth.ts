@@ -3,18 +3,24 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 
+const clientId = process.env.GOOGLE_CLIENT_ID;
+const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+
+if (!authSecret) console.error("AUTH_ERROR: Missing AUTH_SECRET environment variable.");
+if (!clientId) console.error("AUTH_ERROR: Missing GOOGLE_CLIENT_ID environment variable.");
+if (!clientSecret) console.error("AUTH_ERROR: Missing GOOGLE_CLIENT_SECRET environment variable.");
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: clientId as string,
+      clientSecret: clientSecret as string,
     }),
   ],
-  // Use a fallback for the secret to prevent 500s if one is missing
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  secret: authSecret,
   trustHost: true,
-  debug: process.env.NODE_ENV === "development",
   callbacks: {
     session: ({ session, user }) => ({
       ...session,
