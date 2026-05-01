@@ -5,7 +5,11 @@ import { cleanupExpiredReservations } from '@/lib/expiry';
 export async function GET() {
   try {
     // Lazy cleanup of expired reservations
-    await cleanupExpiredReservations();
+    try {
+      await cleanupExpiredReservations();
+    } catch (e) {
+      console.error('Lazy cleanup failed:', e);
+    }
 
     const products = await prisma.product.findMany({
       include: {
