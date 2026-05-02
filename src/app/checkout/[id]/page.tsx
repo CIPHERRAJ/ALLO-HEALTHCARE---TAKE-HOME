@@ -153,7 +153,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
         <Button 
           variant="ghost" 
           onClick={() => router.push('/cart')} 
-          className="mb-12 text-slate-400 hover:text-slate-900 font-black text-[10px] uppercase tracking-[0.2em] gap-3 pl-0"
+          className="mb-12 text-slate-600 hover:text-slate-900 font-black text-[10px] uppercase tracking-[0.2em] gap-3 pl-0"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Activity
         </Button>
@@ -178,7 +178,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                   </div>
                   <div className="space-y-2">
                     <h1 className="text-4xl lg:text-5xl font-black tracking-tight leading-none">Final Confirmation.</h1>
-                    <p className="text-slate-400 font-medium text-lg">Inventory units are temporarily locked for your session.</p>
+                    <p className="text-slate-600 font-medium text-lg">Inventory units are temporarily locked for your session.</p>
                   </div>
                 </div>
               </div>
@@ -187,10 +187,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                 {/* Product Detail */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 pb-12 border-b border-slate-50">
                   <div className="h-24 w-24 bg-slate-50 rounded-[32px] flex items-center justify-center shrink-0 border border-slate-100">
-                    <Package className="h-10 w-10 text-slate-300" />
+                    <Package className="h-10 w-10 text-slate-500" />
                   </div>
                   <div className="flex-grow space-y-2">
-                    <p className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">Inventory Allocation</p>
+                    <p className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-600">Inventory Allocation</p>
                     <h3 className="text-2xl font-black text-slate-900 tracking-tight">{reservation.product.name}</h3>
                     <div className="flex items-center gap-3">
                       <Warehouse className="h-4 w-4 text-blue-600" />
@@ -198,16 +198,16 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                     </div>
                   </div>
                   <div className="sm:text-right space-y-1">
-                     <p className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">Transaction Value</p>
+                     <p className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-600">Transaction Value</p>
                      <p className="text-4xl font-black text-blue-600 tracking-tighter">${(reservation.units * (reservation.product.price ?? 0)).toLocaleString()}</p>
-                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{reservation.units} Units @ ${reservation.product.price.toLocaleString()}</p>
+                     <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">{reservation.units} Units @ ${reservation.product.price.toLocaleString()}</p>
                   </div>
                 </div>
 
                 {/* Status Dashboard */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="space-y-4">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Fulfillment Status</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 px-1">Fulfillment Status</p>
                       <div className={`p-6 rounded-[24px] border flex items-center justify-between transition-all ${
                         reservation.status === 'CONFIRMED' ? 'bg-emerald-50 border-emerald-100' : 
                         reservation.status === 'RELEASED' ? 'bg-slate-50 border-slate-100' : 
@@ -216,7 +216,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                          <div className="flex items-center gap-4">
                             <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${
                               reservation.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-600' : 
-                              reservation.status === 'RELEASED' ? 'bg-slate-200 text-slate-400' : 
+                              reservation.status === 'RELEASED' ? 'bg-slate-200 text-slate-600' : 
                               isExpired ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'
                             }`}>
                                {reservation.status === 'CONFIRMED' ? <CheckCircle2 className="h-6 w-6" /> : 
@@ -231,7 +231,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                                }`}>
                                  {isExpired ? 'EXPIRED' : reservation.status}
                                </p>
-                               <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-tight">System Registry</p>
+                               <p className="text-[10px] font-bold text-slate-600 uppercase mt-0.5 tracking-tight">System Registry</p>
                             </div>
                          </div>
                       </div>
@@ -239,7 +239,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
 
                    {reservation.status === 'PENDING' && !isExpired && (
                      <div className="space-y-4">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Allocation Timer</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 px-1">Allocation Timer</p>
                         <div className="bg-slate-900 p-6 rounded-[24px] text-center relative overflow-hidden group">
                            <div className="absolute inset-0 bg-blue-600/5 group-hover:bg-blue-600/10 transition-colors" />
                            <p className="text-4xl font-black text-white font-mono tracking-tighter relative z-10">{formatTime(timeLeft)}</p>
@@ -263,7 +263,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                     </Button>
                     <Button 
                       variant="ghost" 
-                      className="h-16 rounded-2xl px-8 font-black text-[10px] uppercase tracking-[0.2em] text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all" 
+                      className="h-16 rounded-2xl px-8 font-black text-[10px] uppercase tracking-[0.2em] text-slate-600 hover:text-red-600 hover:bg-red-50 transition-all" 
                       onClick={handleCancel} 
                       disabled={processing}
                     >
@@ -306,11 +306,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
              </div>
 
              <div className="px-4 space-y-4">
-                <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                <div className="flex items-center gap-3 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
                    <ShieldCheck className="h-3 w-3" />
                    <span>Security ID: {id.slice(-8).toUpperCase()}</span>
                 </div>
-                <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                <div className="flex items-center gap-3 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
                    <Globe className="h-3 w-3" />
                    <span>Node: Global-East-1</span>
                 </div>

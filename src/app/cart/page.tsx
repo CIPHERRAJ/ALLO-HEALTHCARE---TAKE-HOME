@@ -122,7 +122,7 @@ export default function CartPage() {
             </div>
             <div>
               <span className="block font-black text-slate-900 leading-none tracking-tight text-lg">{isAdmin ? 'Audit Trail' : 'My Activity'}</span>
-              <span className="block text-[9px] uppercase tracking-[0.2em] text-slate-400 font-black mt-1">Operator: {session?.user?.email?.split('@')[0].toUpperCase()}</span>
+              <span className="block text-[9px] uppercase tracking-[0.2em] text-slate-600 font-black mt-1">Operator: {session?.user?.email?.split('@')[0].toUpperCase()}</span>
             </div>
           </div>
           
@@ -146,7 +146,7 @@ export default function CartPage() {
                   <Badge className="bg-slate-900 text-white border-none px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-md">
                      System Registry
                   </Badge>
-                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Transaction Audit Log</span>
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Transaction Audit Log</span>
                </div>
                <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-none">Global Ledger.</h1>
                <p className="text-lg text-slate-500 font-medium max-w-xl">
@@ -166,17 +166,17 @@ export default function CartPage() {
           {reservations.length === 0 ? (
             <div className="py-40 text-center flex flex-col items-center">
                <div className="w-24 h-24 bg-slate-50 rounded-[40px] flex items-center justify-center mb-8 border border-slate-100/50">
-                  <History className="h-10 w-10 text-slate-200" />
+                  <History className="h-10 w-10 text-slate-400" />
                </div>
                <h3 className="text-2xl font-black text-slate-900 mb-2">Registry Empty</h3>
-               <p className="text-slate-400 mb-10 max-w-sm font-medium">No transaction records detected in the current session parameters.</p>
+               <p className="text-slate-600 mb-10 max-w-sm font-medium">No transaction records detected in the current session parameters.</p>
                <Button onClick={() => router.push('/')} className="h-14 bg-slate-900 hover:bg-blue-600 rounded-2xl px-10 font-bold transition-all shadow-xl shadow-slate-200">
                   Initialize Terminal
                </Button>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">
+              <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
                  <div className="col-span-6">Allocation Details</div>
                  <div className="col-span-3">Status Matrix</div>
                  <div className="col-span-3 text-right">Actions</div>
@@ -198,9 +198,9 @@ export default function CartPage() {
                            <div className="space-y-2">
                               <div className="flex items-center gap-3">
                                  <h3 className="text-lg font-black text-slate-900 tracking-tight">{res.product.name}</h3>
-                                 <span className="text-[10px] font-black text-slate-200 uppercase tracking-widest">#{res.id.slice(-6).toUpperCase()}</span>
+                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">#{res.id.slice(-6).toUpperCase()}</span>
                               </div>
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-black text-slate-400 uppercase tracking-[0.1em]">
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-black text-slate-600 uppercase tracking-[0.1em]">
                                  <div className="flex items-center gap-1.5">
                                     <Warehouse className="h-3 w-3" />
                                     {res.warehouse.name}
@@ -238,7 +238,7 @@ export default function CartPage() {
                              <Button 
                                variant="ghost" 
                                onClick={() => router.push(`/checkout/${res.id}`)}
-                               className="h-12 text-slate-400 hover:text-slate-900 font-black text-[10px] uppercase tracking-widest px-6"
+                               className="h-12 text-slate-600 hover:text-slate-900 font-black text-[10px] uppercase tracking-widest px-6"
                              >
                                Details
                              </Button>
@@ -260,7 +260,7 @@ export default function CartPage() {
                <ShieldCheck className="h-5 w-5" />
                <span className="text-sm font-black tracking-tighter uppercase">Protocol Integrity</span>
             </div>
-            <p className="text-slate-300 text-[9px] font-black uppercase tracking-[0.4em] italic">
+            <p className="text-slate-500 text-[9px] font-black uppercase tracking-[0.4em] italic">
                "Ensuring integrity in every atomic reservation."
             </p>
          </div>

@@ -52,7 +52,7 @@ export default function LoginPage() {
             <Package className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Access Terminal</h1>
-          <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Allo Logistics Infrastructure</p>
+          <p className="text-sm font-bold text-slate-600 uppercase tracking-[0.2em]">Allo Logistics Infrastructure</p>
         </div>
 
         <Card className="border-none shadow-2xl shadow-blue-900/5 rounded-[32px] overflow-hidden bg-white">
@@ -64,7 +64,7 @@ export default function LoginPage() {
           <CardContent className="p-10 pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Work Email</Label>
+                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-1">Work Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -78,7 +78,7 @@ export default function LoginPage() {
               
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
-                  <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Security Key</Label>
+                  <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-slate-600">Security Key</Label>
                   <Link href="#" className="text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:underline">Reset Access</Link>
                 </div>
                 <div className="relative group/pass">
@@ -93,7 +93,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 transition-colors p-1"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 transition-colors p-1"
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -124,14 +124,14 @@ export default function LoginPage() {
               </Link>
             </div>
             
-            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
               <ShieldCheck className="h-3 w-3" />
               <span>End-to-End Encrypted Node</span>
             </div>
           </CardFooter>
         </Card>
         
-        <p className="text-center text-[10px] font-medium text-slate-400 tracking-wide uppercase">
+        <p className="text-center text-[10px] font-medium text-slate-600 tracking-wide uppercase">
           © 2026 Allo Healthcare Global. All rights reserved.
         </p>
       </div>

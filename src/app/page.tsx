@@ -105,7 +105,7 @@ export default function ProductsPage() {
             </div>
             <div>
               <span className="block font-black text-slate-900 leading-none tracking-tight text-lg">ALLO <span className="text-blue-600">OS</span></span>
-              <span className="block text-[9px] uppercase tracking-[0.2em] text-slate-400 font-black mt-1">Infrastructure v2.4</span>
+              <span className="block text-[9px] uppercase tracking-[0.2em] text-slate-600 font-black mt-1">Infrastructure v2.4</span>
             </div>
           </div>
           
@@ -152,11 +152,11 @@ export default function ProductsPage() {
                   Live Network Active
                </Badge>
                <span className="w-1 h-1 rounded-full bg-slate-200" />
-               <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Global Inventory Protocol</span>
+               <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Global Inventory Protocol</span>
             </div>
             <h1 className="text-5xl lg:text-7xl font-black text-slate-900 tracking-tight leading-[0.95]">
               Real-time <br />
-              <span className="text-slate-300">Fulfillment</span> Terminal.
+              <span className="text-slate-500">Fulfillment</span> Terminal.
             </h1>
             <p className="text-xl text-slate-500 max-w-xl font-medium leading-relaxed">
               Secure priority allocation across our multi-region network. 
@@ -180,8 +180,8 @@ export default function ProductsPage() {
         {/* Catalog Grid */}
         <div className="grid grid-cols-1 gap-12">
           <div className="flex items-center justify-between border-b border-slate-100 pb-6">
-             <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">Available Manifest</h2>
-             <div className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+             <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-600">Available Manifest</h2>
+             <div className="flex items-center gap-4 text-[10px] font-black text-slate-600 uppercase tracking-widest">
                 <span>Displaying {products.length} Units</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
                 <span>Sort by Demand</span>
@@ -194,13 +194,13 @@ export default function ProductsPage() {
                 <Card className="border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.08)] transition-all duration-500 bg-white rounded-[40px] overflow-hidden flex flex-col md:flex-row h-full border border-transparent hover:border-slate-100">
                   <div className="md:w-[42%] bg-slate-50 relative flex items-center justify-center p-12 group-hover:bg-slate-100/50 transition-colors">
                      <div className="absolute top-6 left-6">
-                        <Badge variant="outline" className="border-slate-200 text-slate-400 text-[9px] font-black uppercase tracking-widest bg-white/50 backdrop-blur-sm">
+                        <Badge variant="outline" className="border-slate-200 text-slate-600 text-[9px] font-black uppercase tracking-widest bg-white/50 backdrop-blur-sm">
                            REF: {product.id.slice(-6).toUpperCase()}
                         </Badge>
                      </div>
                      <div className="relative z-10 flex flex-col items-center">
                         <div className="w-24 h-24 bg-white rounded-3xl shadow-xl shadow-slate-200/50 flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
-                          <Package className="h-12 w-12 text-slate-300 group-hover:text-blue-600 transition-colors" />
+                          <Package className="h-12 w-12 text-slate-500 group-hover:text-blue-600 transition-colors" />
                         </div>
                      </div>
                   </div>
@@ -209,9 +209,9 @@ export default function ProductsPage() {
                     <div className="flex justify-between items-start mb-6">
                       <div className="space-y-1">
                         <h3 className="text-2xl font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">{product.name}</h3>
-                        <p className="text-2xl font-black text-slate-400 tracking-tighter">${(product.price ?? 0).toLocaleString()}</p>
+                        <p className="text-2xl font-black text-slate-600 tracking-tighter">${(product.price ?? 0).toLocaleString()}</p>
                       </div>
-                      <div className="h-10 w-10 rounded-full border border-slate-100 flex items-center justify-center text-slate-300 group-hover:border-blue-100 group-hover:text-blue-600 transition-all">
+                      <div className="h-10 w-10 rounded-full border border-slate-100 flex items-center justify-center text-slate-500 group-hover:border-blue-100 group-hover:text-blue-600 transition-all">
                         <ArrowUpRight className="h-5 w-5" />
                       </div>
                     </div>
@@ -229,7 +229,7 @@ export default function ProductsPage() {
                           <div key={stock.warehouseId} className="flex items-center justify-between group/stock border-b border-slate-50 pb-4 last:border-0 last:pb-0">
                             <div className="flex items-center gap-4">
                               <div className="h-11 w-11 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 group-hover/stock:bg-blue-50 group-hover/stock:border-blue-100 transition-colors">
-                                <Warehouse className="h-5 w-5 text-slate-400 group-hover/stock:text-blue-600" />
+                                <Warehouse className="h-5 w-5 text-slate-600 group-hover/stock:text-blue-600" />
                               </div>
                               <div className="space-y-0.5">
                                 <p className="text-[11px] font-black text-slate-900 uppercase tracking-tight">{stock.warehouseName}</p>
@@ -238,7 +238,7 @@ export default function ProductsPage() {
                                     isSoldOut ? 'bg-slate-300' :
                                     isFullyReserved ? 'bg-orange-400' : 'bg-emerald-500'
                                   }`} />
-                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
                                     {isSoldOut ? 'Depleted' : isFullyReserved ? 'Held' : `${stock.availableUnits} Active`}
                                   </p>
                                 </div>
@@ -252,7 +252,7 @@ export default function ProductsPage() {
                                 className={`h-11 rounded-2xl px-6 text-[10px] font-black uppercase tracking-[0.2em] transition-all ${
                                   stock.availableUnits > 0 
                                   ? "text-blue-600 hover:bg-blue-600 hover:text-white" 
-                                  : "text-slate-300 cursor-not-allowed"
+                                  : "text-slate-500 cursor-not-allowed"
                                 }`}
                                 disabled={stock.availableUnits <= 0}
                                 onClick={() => handleAddToCart(product, stock)}
@@ -281,10 +281,10 @@ export default function ProductsPage() {
             </div>
             <div className="flex flex-wrap justify-center gap-x-12 gap-y-4">
                {['Compliance', 'Security', 'Infrastructure', 'Node Status'].map(item => (
-                 <span key={item} className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-blue-600 cursor-pointer transition-colors">{item}</span>
+                 <span key={item} className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 hover:text-blue-600 cursor-pointer transition-colors">{item}</span>
                ))}
             </div>
-            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
               © 2026 Allo Global Logistics Infrastructure. Secured by Enterprise Protocol v2.
             </p>
          </div>

@@ -64,7 +64,7 @@ export default function RegisterPage() {
             <Package className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Operator Provisioning</h1>
-          <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Initialize Global Access</p>
+          <p className="text-sm font-bold text-slate-600 uppercase tracking-[0.2em]">Initialize Global Access</p>
         </div>
 
         <Card className="border-none shadow-2xl shadow-blue-900/5 rounded-[32px] overflow-hidden bg-white">
@@ -76,7 +76,7 @@ export default function RegisterPage() {
           <CardContent className="p-10 pt-6">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</Label>
+                <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-1">Full Name</Label>
                 <Input
                   id="name"
                   placeholder="John Doe"
@@ -88,7 +88,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Work Email</Label>
+                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-1">Work Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -102,7 +102,7 @@ export default function RegisterPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Security Key</Label>
+                  <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-1">Security Key</Label>
                   <div className="relative group/pass">
                     <Input
                       id="password"
@@ -115,14 +115,14 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 transition-colors p-1"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 transition-colors p-1"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="confirmPassword" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Confirm Key</Label>
+                  <Label htmlFor="confirmPassword" className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-1">Confirm Key</Label>
                   <div className="relative group/pass">
                     <Input
                       id="confirmPassword"
@@ -135,7 +135,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 transition-colors p-1"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 transition-colors p-1"
                     >
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -148,12 +148,12 @@ export default function RegisterPage() {
                   <span className="w-full border-t border-slate-100" />
                 </div>
                 <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
-                  <span className="bg-white px-3 text-slate-300">Staff Credentials</span>
+                  <span className="bg-white px-3 text-slate-500">Staff Credentials</span>
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="adminSecret" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Administrative Secret (Optional)</Label>
+                <Label htmlFor="adminSecret" className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-1">Administrative Secret (Optional)</Label>
                 <Input
                   id="adminSecret"
                   type="password"
@@ -188,14 +188,14 @@ export default function RegisterPage() {
               </Link>
             </div>
             
-            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
               <CheckCircle2 className="h-3 w-3" />
               <span>Identity Verified via Global Ledger</span>
             </div>
           </CardFooter>
         </Card>
         
-        <p className="text-center text-[10px] font-medium text-slate-400 tracking-wide uppercase">
+        <p className="text-center text-[10px] font-medium text-slate-600 tracking-wide uppercase">
           © 2026 Allo Healthcare Global. All rights reserved.
         </p>
       </div>
