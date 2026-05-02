@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,25 +14,8 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isAdminRegistration, setIsAdminRegistration] = useState(false);
-  const [adminExists, setAdminExists] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    checkAdminStatus();
-  }, []);
-
-  const checkAdminStatus = async () => {
-    try {
-      const res = await fetch('/api/register/status');
-      const data = await res.json();
-      setAdminExists(data.adminExists);
-    } catch (e) {
-      // If API fails, we'll allow showing the option just in case
-      setAdminExists(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +33,7 @@ export default function RegisterPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password, isAdminRegistration }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await response.json();
@@ -123,25 +106,6 @@ export default function RegisterPage() {
                 required
               />
             </div>
-
-            {/* Only show if NO admin exists */}
-            {adminExists === false && (
-              <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
-                 <div className="mt-0.5">
-                    <input 
-                      id="adminMode"
-                      type="checkbox" 
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
-                      checked={isAdminRegistration}
-                      onChange={(e) => setIsAdminRegistration(e.target.checked)}
-                    />
-                 </div>
-                 <Label htmlFor="adminMode" className="cursor-pointer">
-                    <span className="block font-bold text-blue-900 text-sm">Register as System Administrator</span>
-                    <span className="block text-[11px] text-blue-700/70 font-medium">No admin detected. This is a one-time setup opportunity.</span>
-                 </Label>
-              </div>
-            )}
 
             <Button 
               type="submit" 
