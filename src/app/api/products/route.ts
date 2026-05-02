@@ -6,12 +6,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    // Lazy cleanup of expired reservations
-    try {
-      await cleanupExpiredReservations();
-    } catch (e) {
-      console.error('Lazy cleanup failed:', e);
-    }
+    // Trigger lazy cleanup (non-blocking for performance)
+    cleanupExpiredReservations().catch(e => console.error('Lazy cleanup failed:', e));
 
     const products = await prisma.product.findMany({
       include: {
