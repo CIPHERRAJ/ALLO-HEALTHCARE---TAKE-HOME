@@ -11,6 +11,8 @@ const reservationSchema = z.object({
   units: z.number().int().positive(),
 });
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const session = await auth();
   if (!session?.user) {
@@ -35,9 +37,13 @@ export async function GET() {
     });
 
     return NextResponse.json(reservations);
-  } catch (error) {
-    console.error('Error fetching user reservations:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('USER_RESERVATIONS_ERROR:', error);
+    return NextResponse.json({ 
+      error: 'Internal Server Error', 
+      details: error.message,
+      code: error.code 
+    }, { status: 500 });
   }
 }
 
