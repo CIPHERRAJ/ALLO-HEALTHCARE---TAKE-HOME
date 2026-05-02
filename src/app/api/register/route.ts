@@ -38,9 +38,20 @@ export async function POST(req: Request) {
     let role: 'USER' | 'ADMIN' = 'USER';
     
     if (isAdminRegistration === true) {
-      // Temporarily allowing another admin creation to fix the user's lockout
-      role = 'ADMIN';
-      console.log("[AUTH] Granting ADMIN role via force-override");
+      const adminCount = await prisma.user.count({ where: { role: 'ADMIN' } }).catch(e => {
+        console.error("[AUTH] Step 3 Failed (count):", e);
+        throw new Error("Admin status check failed");
+      });
+
+      if (adminCount === 0) {
+        role = 'ADMIN';
+        console.log("[AUTH] Granting initial ADMIN role");
+      } else {
+        return NextResponse.json(
+          { error: "An administrator already exists. This setup is locked." },
+          { status: 403 }
+        );
+      }
     }
 
     // Step 4: Create user

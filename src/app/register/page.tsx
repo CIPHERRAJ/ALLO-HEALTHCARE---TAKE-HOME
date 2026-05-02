@@ -124,8 +124,8 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* FORCE SHOWING FOR INITIAL SETUP */}
-            {true && (
+            {/* Only show if NO admin exists */}
+            {adminExists === false && (
               <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
                  <div className="mt-0.5">
                     <input 
