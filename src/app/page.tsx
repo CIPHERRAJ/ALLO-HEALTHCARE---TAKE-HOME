@@ -99,7 +99,11 @@ export default function ProductsPage() {
             <span className="font-bold text-slate-900 tracking-tight">Allo Dashboard</span>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden md:block text-right mr-2">
+             <Button variant="ghost" onClick={() => router.push('/cart')} className="text-slate-600 flex items-center gap-2">
+               <ShoppingCart className="h-4 w-4" />
+               My Activity
+             </Button>
+            <div className="hidden md:block text-right mr-2 border-l pl-4">
               <p className="text-sm font-semibold text-slate-900 leading-none">{session?.user?.name}</p>
               <p className="text-xs text-slate-500 mt-1">{session?.user?.email}</p>
             </div>

@@ -3,12 +3,43 @@ import prisma from '@/lib/prisma';
 import { z } from 'zod';
 import { redis, redisEnabled } from '@/lib/redis';
 import { auth } from '@/auth';
+import { cleanupExpiredReservations } from '@/lib/expiry';
 
 const reservationSchema = z.object({
   productId: z.string(),
   warehouseId: z.string(),
   units: z.number().int().positive(),
 });
+
+export async function GET() {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    // Trigger lazy cleanup (non-blocking)
+    cleanupExpiredReservations().catch(e => console.error('Background cleanup failed in GET list:', e));
+
+    const reservations = await prisma.reservation.findMany({
+      where: {
+        userId: (session.user as any).id,
+      },
+      include: {
+        product: true,
+        warehouse: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json(reservations);
+  } catch (error) {
+    console.error('Error fetching user reservations:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
 
 export async function POST(req: NextRequest) {
   const session = await auth();

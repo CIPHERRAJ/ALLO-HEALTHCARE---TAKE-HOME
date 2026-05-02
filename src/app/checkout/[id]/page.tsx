@@ -181,9 +181,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
               </Button>
             </>
           ) : (
-            <Button className="w-full" variant="outline" onClick={() => router.push('/')}>
-              Back to Products
-            </Button>
+            <>
+              <Button className="w-full" variant="outline" onClick={() => router.push('/cart')}>
+                View My Activity
+              </Button>
+              <Button className="w-full" variant="ghost" onClick={() => router.push('/')}>
+                Back to Products
+              </Button>
+            </>
           )}
         </CardFooter>
       </Card>
