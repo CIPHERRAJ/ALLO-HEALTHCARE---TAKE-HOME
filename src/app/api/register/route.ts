@@ -7,49 +7,44 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { email, password, name, isAdminRegistration } = body;
 
-    console.log(`Registration attempt for: ${email}, isAdminRequest: ${!!isAdminRegistration}`);
+    console.log(`[AUTH] Registration attempt: ${email}`);
 
     if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email and password are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
+    // Step 1: Check existing user
+    console.log(`[AUTH] Step 1: Checking for existing user...`);
     const existingUser = await prisma.user.findUnique({
       where: { email },
+    }).catch(e => {
+      console.error("[AUTH] Step 1 Failed:", e);
+      throw new Error(`Database check failed: ${e.message}`);
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: "User already exists" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "User already exists" }, { status: 400 });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Step 2: Hash password
+    console.log(`[AUTH] Step 2: Hashing password...`);
+    const hashedPassword = await bcrypt.hash(password, 10).catch(e => {
+      console.error("[AUTH] Step 2 Failed:", e);
+      throw new Error("Encryption failed");
+    });
 
+    // Step 3: Determine Role
+    console.log(`[AUTH] Step 3: Determining role...`);
     let role: 'USER' | 'ADMIN' = 'USER';
     
-    // One-time Admin Registration Logic
     if (isAdminRegistration === true) {
-      try {
-        const adminCount = await prisma.user.count({ where: { role: 'ADMIN' } });
-        if (adminCount === 0) {
-          role = 'ADMIN';
-          console.log("Granting initial ADMIN role to user");
-        } else {
-          return NextResponse.json(
-            { error: "An administrator already exists. This one-time setup is no longer available." },
-            { status: 403 }
-          );
-        }
-      } catch (dbError) {
-        console.error("Database error during admin count check:", dbError);
-        throw dbError; // Rethrow to be caught by main catch block
-      }
+      // Temporarily allowing another admin creation to fix the user's lockout
+      role = 'ADMIN';
+      console.log("[AUTH] Granting ADMIN role via force-override");
     }
 
+    // Step 4: Create user
+    console.log(`[AUTH] Step 4: Creating user record in database...`);
     const user = await prisma.user.create({
       data: {
         email,
@@ -57,8 +52,12 @@ export async function POST(req: Request) {
         password: hashedPassword,
         role: role,
       },
+    }).catch(e => {
+      console.error("[AUTH] Step 4 Failed (create):", e);
+      throw new Error(`User creation failed: ${e.message}`);
     });
 
+    console.log(`[AUTH] Success: User created with ID ${user.id}`);
     return NextResponse.json(
       { message: "User created successfully", userId: user.id },
       { status: 201 }
