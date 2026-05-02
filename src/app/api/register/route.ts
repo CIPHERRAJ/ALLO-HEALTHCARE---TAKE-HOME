@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name, isAdminRegistration } = await req.json();
+    const { email, password, name, isAdminRegistration, adminSecret } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -28,16 +28,30 @@ export async function POST(req: Request) {
 
     let role: 'USER' | 'ADMIN' = 'USER';
     
-    // One-time Admin Registration Logic
+    // Admin Registration Logic
     if (isAdminRegistration) {
-      const adminCount = await prisma.user.count({ where: { role: 'ADMIN' } });
-      if (adminCount === 0) {
+      const serverAdminSecret = process.env.ADMIN_SECRET;
+      
+      // If a secret is configured, require it
+      if (serverAdminSecret) {
+        if (adminSecret !== serverAdminSecret) {
+          return NextResponse.json(
+            { error: "Invalid Admin Secret" },
+            { status: 403 }
+          );
+        }
         role = 'ADMIN';
       } else {
-        return NextResponse.json(
-          { error: "An administrator already exists. This option is no longer available." },
-          { status: 403 }
-        );
+        // Fallback to one-time setup if no secret is configured
+        const adminCount = await prisma.user.count({ where: { role: 'ADMIN' } });
+        if (adminCount === 0) {
+          role = 'ADMIN';
+        } else {
+          return NextResponse.json(
+            { error: "An administrator already exists. Please set ADMIN_SECRET in .env to create more." },
+            { status: 403 }
+          );
+        }
       }
     }
 
