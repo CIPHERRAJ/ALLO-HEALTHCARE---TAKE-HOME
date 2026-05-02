@@ -1,12 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Loader2, Package, Plus, Warehouse as WarehouseIcon, DollarSign, List, LayoutDashboard, Settings, Edit, Trash2, Save, X, ChevronRight } from 'lucide-react';
+import { 
+  Loader2, 
+  Package, 
+  Plus, 
+  Warehouse as WarehouseIcon, 
+  DollarSign, 
+  List, 
+  Settings, 
+  Edit, 
+  Trash2, 
+  Save, 
+  X, 
+  ChevronRight,
+  ArrowLeft,
+  ShieldCheck,
+  Zap,
+  LayoutGrid,
+  FileText
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface Warehouse {
@@ -35,7 +54,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   
-  // Form State (Shared for Create/Edit)
+  // Form State
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -62,14 +81,13 @@ export default function AdminDashboard() {
       setWarehouses(wData);
       setProducts(pData);
       
-      // Initialize stock levels map
       const initialStock: { [key: string]: string } = {};
       wData.forEach((w: Warehouse) => {
         initialStock[w.id] = '0';
       });
       setStockLevels(initialStock);
     } catch (error) {
-      toast.error('Data synchronization failed');
+      toast.error('Inventory synchronization failure');
     } finally {
       setLoading(false);
     }
@@ -131,13 +149,13 @@ export default function AdminDashboard() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Operation failed');
+        throw new Error(data.error || 'Protocol execution failure');
       }
 
-      toast.success(activeView === 'EDIT' ? 'Product updated' : 'Product created');
+      toast.success(activeView === 'EDIT' ? 'Asset parameters updated' : 'New asset deployed');
       resetForm();
       setView('LIST');
-      fetchInitialData(); // Refresh list
+      fetchInitialData();
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -146,13 +164,13 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product? This will also remove all stock records.')) return;
+    if (!confirm('Authorize permanent removal of this asset from the global network?')) return;
     
     try {
       const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Delete failed');
+      if (!res.ok) throw new Error('Decommissioning failed');
       
-      toast.success('Product removed from network');
+      toast.success('Asset removed from registry');
       fetchInitialData();
     } catch (error: any) {
       toast.error(error.message);
@@ -161,126 +179,151 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <div className="relative mb-8">
+          <div className="h-20 w-20 rounded-3xl border-[3px] border-slate-100 border-t-blue-600 animate-spin"></div>
+          <ShieldCheck className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-blue-600" />
+        </div>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">Initializing Admin Node</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 text-white hidden lg:flex flex-col shrink-0">
-        <div className="p-6 flex items-center gap-3 border-b border-white/5">
-           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Package className="h-5 w-5 text-white" />
+    <div className="min-h-screen bg-white lg:flex">
+      {/* Precision Admin Sidebar */}
+      <aside className="w-72 bg-slate-900 text-white hidden lg:flex flex-col shrink-0 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+           <Settings className="h-64 w-64 -mr-20 -mt-20 rotate-12" />
+        </div>
+
+        <div className="p-8 flex items-center gap-4 border-b border-white/5 relative z-10">
+           <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/20 ring-4 ring-blue-600/10">
+              <Zap className="h-6 w-6 text-white fill-white" />
            </div>
            <div>
-              <span className="block font-bold tracking-tight text-sm uppercase">Admin Console</span>
-              <span className="block text-[9px] text-slate-400 font-black tracking-widest">LOGISTICS OS v2.4</span>
+              <span className="block font-black tracking-tight text-lg uppercase">Console</span>
+              <span className="block text-[9px] text-blue-400 font-black tracking-[0.2em]">ADMIN PRIVILEGE</span>
            </div>
         </div>
         
-        <nav className="flex-grow px-4 space-y-2 mt-8">
+        <nav className="flex-grow px-4 space-y-2 mt-10 relative z-10">
+           <p className="px-4 text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Operations</p>
+           
            <button 
              onClick={() => setView('LIST')}
-             className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all ${
-               activeView === 'LIST' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'
+             className={`w-full text-left px-5 py-4 rounded-2xl flex items-center gap-4 transition-all duration-300 ${
+               activeView === 'LIST' ? 'bg-white/10 text-white shadow-lg' : 'text-slate-400 hover:bg-white/5 hover:text-white'
              }`}
            >
-              <List className="h-4 w-4" />
-              <span className="text-sm font-bold">Product Catalog</span>
+              <LayoutGrid className={`h-4 w-4 ${activeView === 'LIST' ? 'text-blue-400' : 'text-slate-500'}`} />
+              <span className="text-[11px] font-black uppercase tracking-widest">Global Catalog</span>
            </button>
            
            <button 
              onClick={() => { setView('CREATE'); resetForm(); }}
-             className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all ${
-               activeView === 'CREATE' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'
+             className={`w-full text-left px-5 py-4 rounded-2xl flex items-center gap-4 transition-all duration-300 ${
+               activeView === 'CREATE' ? 'bg-white/10 text-white shadow-lg' : 'text-slate-400 hover:bg-white/5 hover:text-white'
              }`}
            >
-              <Plus className="h-4 w-4" />
-              <span className="text-sm font-bold">Deploy New Asset</span>
+              <Plus className={`h-4 w-4 ${activeView === 'CREATE' ? 'text-blue-400' : 'text-slate-500'}`} />
+              <span className="text-[11px] font-black uppercase tracking-widest">Deploy Asset</span>
            </button>
 
-           <div className="pt-4 mt-4 border-t border-white/5">
-              <p className="px-3 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Infrastructure</p>
-              <div className="text-slate-400 p-3 rounded-xl flex items-center gap-3 cursor-not-allowed opacity-50">
+           <div className="pt-8 mt-8 border-t border-white/5">
+              <p className="px-4 text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Infrastructure</p>
+              <div className="text-slate-600 px-5 py-4 rounded-2xl flex items-center gap-4 cursor-not-allowed group">
                  <WarehouseIcon className="h-4 w-4" />
-                 <span className="text-sm font-bold">Node Management</span>
+                 <span className="text-[11px] font-black uppercase tracking-widest">Node Map</span>
+                 <Badge className="ml-auto bg-slate-800 text-[8px] border-none text-slate-500 px-1.5">LOCKED</Badge>
               </div>
-              <div className="text-slate-400 p-3 rounded-xl flex items-center gap-3 cursor-not-allowed opacity-50">
-                 <Settings className="h-4 w-4" />
-                 <span className="text-sm font-bold">System Config</span>
+              <div className="text-slate-600 px-5 py-4 rounded-2xl flex items-center gap-4 cursor-not-allowed group">
+                 <ShieldCheck className="h-4 w-4" />
+                 <span className="text-[11px] font-black uppercase tracking-widest">Security</span>
               </div>
            </div>
         </nav>
+
+        <div className="p-8 border-t border-white/5 relative z-10">
+           <Button variant="ghost" onClick={() => router.push('/')} className="w-full justify-start text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl font-black text-[10px] uppercase tracking-widest gap-3">
+              <ArrowLeft className="h-4 w-4" /> Exit Console
+           </Button>
+        </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-grow p-8 lg:p-12 overflow-y-auto">
-        <div className="max-w-5xl mx-auto">
+      {/* Main Content Area */}
+      <main className="flex-grow p-8 lg:p-16 overflow-y-auto bg-slate-50/30">
+        <div className="max-w-[1200px] mx-auto">
           
-          {/* Header */}
-          <div className="flex items-center justify-between mb-12">
-            <div>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-                {activeView === 'LIST' ? 'Global Catalog' : 
-                 activeView === 'CREATE' ? 'Deploy New Asset' : 
-                 'Edit Inventory Asset'}
+          {/* Header Section */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+            <div className="space-y-4">
+               <div className="flex items-center gap-3">
+                  <Badge className="bg-blue-600 text-white border-none px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-md">
+                     System Operator
+                  </Badge>
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Inventory Management Node</span>
+               </div>
+               <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-none">
+                {activeView === 'LIST' ? 'Global Catalog.' : 
+                 activeView === 'CREATE' ? 'Deploy Asset.' : 
+                 'Refine Parameters.'}
               </h1>
-              <p className="text-slate-500 font-medium mt-1">
-                {activeView === 'LIST' ? 'Manage and optimize current logistics assets.' : 
-                 'Fill in specifications to propagate new units to the network.'}
+              <p className="text-lg text-slate-500 font-medium max-w-xl">
+                {activeView === 'LIST' ? 'Operational overview of all logistics assets across the global network.' : 
+                 'Provisioning new units requires full specification validation.'}
               </p>
             </div>
-            <Button variant="ghost" onClick={() => router.push('/')} className="rounded-xl font-bold text-slate-400 hover:text-blue-600 gap-2">
-               <X className="h-4 w-4" /> Exit Terminal
-            </Button>
           </div>
 
           {activeView === 'LIST' ? (
-            /* Product List View */
-            <div className="grid grid-cols-1 gap-4">
+            /* Redesigned Product List */
+            <div className="grid grid-cols-1 gap-6">
                {products.length === 0 ? (
-                 <Card className="p-20 text-center border-dashed border-2 bg-transparent rounded-3xl">
-                    <Package className="h-12 w-12 text-slate-200 mx-auto mb-4" />
-                    <h3 className="text-lg font-bold text-slate-900">No assets detected</h3>
-                    <p className="text-slate-500 mb-6 font-medium">Start by deploying your first product.</p>
-                    <Button onClick={() => setView('CREATE')} className="bg-blue-600 hover:bg-blue-700 rounded-xl px-8">
+                 <div className="py-40 text-center flex flex-col items-center">
+                    <div className="w-24 h-24 bg-slate-50 rounded-[40px] flex items-center justify-center mb-8 border border-slate-100/50">
+                       <Package className="h-10 w-10 text-slate-200" />
+                    </div>
+                    <h3 className="text-2xl font-black text-slate-900 mb-2">Registry Empty</h3>
+                    <p className="text-slate-400 mb-10 max-w-sm font-medium">No assets detected in the global ledger. Initialize deployment to proceed.</p>
+                    <Button onClick={() => setView('CREATE')} className="h-14 bg-slate-900 hover:bg-blue-600 rounded-2xl px-10 font-bold transition-all shadow-xl shadow-slate-200">
                        Initialize Deployment
                     </Button>
-                 </Card>
+                 </div>
                ) : (
                  products.map((product) => (
-                   <Card key={product.id} className="group overflow-hidden border-none shadow-sm hover:shadow-md transition-all bg-white rounded-2xl">
-                      <div className="flex flex-col md:flex-row items-center p-5 gap-6">
-                         <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 group-hover:scale-110 transition-transform">
-                            <Package className="h-8 w-8 text-slate-400 group-hover:text-blue-600 transition-colors" />
+                   <Card key={product.id} className="group border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_30px_-8px_rgba(0,0,0,0.06)] transition-all duration-300 bg-white rounded-[32px] overflow-hidden">
+                      <div className="flex flex-col md:flex-row items-center p-6 lg:p-8 gap-10">
+                         <div className="h-20 w-20 bg-slate-50 rounded-[24px] flex items-center justify-center shrink-0 border border-slate-100/50 group-hover:scale-105 transition-transform duration-500">
+                            <Package className="h-10 w-10 text-slate-300 group-hover:text-blue-600 transition-colors" />
                          </div>
                          
-                         <div className="flex-grow text-center md:text-left">
-                            <div className="flex flex-wrap items-center gap-3 mb-1">
-                               <h3 className="text-lg font-black text-slate-900 leading-none">{product.name}</h3>
-                               <span className="text-blue-600 font-bold text-sm bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100">
-                                  ${product.price.toLocaleString()}
-                               </span>
+                         <div className="flex-grow space-y-4">
+                            <div className="flex flex-wrap items-center gap-4">
+                               <h3 className="text-xl font-black text-slate-900 tracking-tight">{product.name}</h3>
+                               <Badge variant="outline" className="text-blue-600 border-blue-100 bg-blue-50/50 font-black text-[10px] uppercase tracking-widest px-3 py-1">
+                                  ${product.price.toLocaleString()} / Unit
+                               </Badge>
+                               <span className="text-[10px] font-black text-slate-200 uppercase tracking-widest ml-auto">ID: {product.id.slice(-8).toUpperCase()}</span>
                             </div>
-                            <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-tight">
+                            
+                            <div className="flex flex-wrap items-center gap-3">
                                {product.stocks.map(s => (
-                                 <div key={s.warehouseId} className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                                    <WarehouseIcon className="h-3 w-3" />
-                                    {s.warehouseName}: <span className="text-slate-700">{s.totalUnits}</span>
+                                 <div key={s.warehouseId} className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100/50 group/s hover:bg-white hover:border-blue-100 transition-colors">
+                                    <WarehouseIcon className="h-3 w-3 text-slate-400 group-hover/s:text-blue-600" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover/s:text-slate-900">{s.warehouseName}:</span>
+                                    <span className="text-[11px] font-black text-blue-600">{s.totalUnits}</span>
                                  </div>
                                ))}
                             </div>
                          </div>
 
-                         <div className="flex items-center gap-2 shrink-0">
+                         <div className="flex items-center gap-3 shrink-0">
                             <Button 
                               variant="outline"
                               size="icon"
                               onClick={() => handleEditClick(product)}
-                              className="rounded-xl border-slate-200 hover:text-blue-600 hover:bg-blue-50"
+                              className="h-12 w-12 rounded-2xl border-slate-100 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95"
                             >
                                <Edit className="h-4 w-4" />
                             </Button>
@@ -288,7 +331,7 @@ export default function AdminDashboard() {
                               variant="outline"
                               size="icon"
                               onClick={() => handleDelete(product.id)}
-                              className="rounded-xl border-slate-200 hover:text-red-600 hover:bg-red-50"
+                              className="h-12 w-12 rounded-2xl border-slate-100 hover:text-red-600 hover:bg-red-50 transition-all active:scale-95"
                             >
                                <Trash2 className="h-4 w-4" />
                             </Button>
@@ -299,29 +342,31 @@ export default function AdminDashboard() {
                )}
             </div>
           ) : (
-            /* Create/Edit Form View */
-            <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 {/* Left Column: Specs */}
-                 <div className="space-y-8">
-                    <Card className="border-none shadow-sm rounded-3xl bg-white p-8">
-                       <div className="space-y-6">
-                         <div className="space-y-2">
-                           <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-slate-400">Product Name</Label>
+            /* Minimalist Deployment Form */
+            <form onSubmit={handleSubmit} className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700 ease-out">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                 {/* Asset Specifications */}
+                 <div className="lg:col-span-7 space-y-10">
+                    <div className="space-y-8">
+                       <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300 px-1 border-l-2 border-blue-600 pl-4">Asset Specifications</h3>
+                       
+                       <div className="space-y-6 bg-white p-10 rounded-[40px] shadow-2xl shadow-blue-900/5 border border-slate-100/50">
+                         <div className="space-y-2.5">
+                           <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Universal Asset Name</Label>
                            <Input 
                              id="name" 
                              value={name} 
                              onChange={(e) => setName(e.target.value)} 
-                             placeholder="e.g. Enterprise Server Rack"
-                             className="rounded-xl h-12 border-slate-200 focus:ring-blue-500"
+                             placeholder="e.g. HIGH-DENSITY GPU ARRAY"
+                             className="rounded-2xl h-14 bg-slate-50 border-slate-100 focus:bg-white transition-all text-base font-medium px-5"
                              required
                            />
                          </div>
                          
-                         <div className="space-y-2">
-                           <Label htmlFor="price" className="text-xs font-black uppercase tracking-widest text-slate-400">Unit Price ($)</Label>
+                         <div className="space-y-2.5">
+                           <Label htmlFor="price" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Market Valuation ($)</Label>
                            <div className="relative">
-                             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                             <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
                              <Input 
                                id="price" 
                                type="number"
@@ -329,70 +374,83 @@ export default function AdminDashboard() {
                                value={price} 
                                onChange={(e) => setPrice(e.target.value)} 
                                placeholder="0.00"
-                               className="rounded-xl h-12 pl-10 border-slate-200 focus:ring-blue-500"
+                               className="rounded-2xl h-14 pl-12 bg-slate-50 border-slate-100 focus:bg-white transition-all text-base font-medium"
                                required
                              />
                            </div>
                          </div>
 
-                         <div className="space-y-2">
-                           <Label htmlFor="description" className="text-xs font-black uppercase tracking-widest text-slate-400">Technical Description</Label>
+                         <div className="space-y-2.5">
+                           <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Technical Documentation</Label>
                            <textarea 
                              id="description"
                              value={description}
                              onChange={(e) => setDescription(e.target.value)}
-                             className="w-full rounded-xl border border-slate-200 p-4 h-32 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                             placeholder="Detailed specifications..."
+                             className="w-full rounded-2xl bg-slate-50 border border-slate-100 p-5 h-44 text-base font-medium focus:bg-white focus:ring-4 focus:ring-blue-600/5 outline-none transition-all resize-none"
+                             placeholder="Provide detailed hardware specifications and regional compliance details..."
                            />
                          </div>
                        </div>
-                    </Card>
+                    </div>
                  </div>
 
-                 {/* Right Column: Inventory */}
-                 <div className="space-y-8">
-                    <Card className="border-none shadow-sm rounded-3xl bg-white p-8">
-                       <div className="flex items-center gap-3 mb-8">
-                         <div className="p-2.5 bg-blue-50 rounded-xl">
-                            <WarehouseIcon className="h-5 w-5 text-blue-600" />
-                         </div>
-                         <h3 className="text-lg font-black text-slate-900 tracking-tight">Stock Allocation</h3>
-                       </div>
+                 {/* Network Distribution */}
+                 <div className="lg:col-span-5 space-y-10">
+                    <div className="space-y-8">
+                       <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300 px-1 border-l-2 border-blue-600 pl-4">Network Distribution</h3>
                        
-                       <div className="space-y-4">
-                         {warehouses.map((w) => (
-                           <div key={w.id} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-white transition-all">
-                             <span className="text-sm font-bold text-slate-700">{w.name}</span>
-                             <div className="w-24">
-                               <Input 
-                                 type="number"
-                                 min="0"
-                                 value={stockLevels[w.id]}
-                                 onChange={(e) => handleStockChange(w.id, e.target.value)}
-                                 className="h-10 rounded-xl text-center font-black border-slate-200"
-                               />
-                             </div>
+                       <div className="bg-white p-10 rounded-[40px] shadow-2xl shadow-blue-900/5 border border-slate-100/50 space-y-8">
+                         <div className="flex items-center gap-4">
+                           <div className="p-3 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-500/20">
+                              <WarehouseIcon className="h-6 w-6" />
                            </div>
-                         ))}
+                           <div>
+                              <h4 className="font-black text-slate-900 uppercase tracking-tight text-sm">Node Allocation</h4>
+                              <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest">Multi-Region Sync</p>
+                           </div>
+                         </div>
+                         
+                         <div className="space-y-5">
+                           {warehouses.map((w) => (
+                             <div key={w.id} className="flex items-center justify-between p-5 rounded-[24px] bg-slate-50/50 border border-slate-100 hover:border-blue-200 hover:bg-white transition-all group/node">
+                               <div className="space-y-1">
+                                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-400 block">{w.name.split(' (')[1]?.replace(')', '') || 'GLOBAL'}</span>
+                                  <span className="text-sm font-bold text-slate-900">{w.name.split(' (')[0]}</span>
+                               </div>
+                               <div className="w-20">
+                                 <Input 
+                                   type="number"
+                                   min="0"
+                                   value={stockLevels[w.id]}
+                                   onChange={(e) => handleStockChange(w.id, e.target.value)}
+                                   className="h-12 rounded-xl text-center font-black bg-white border-slate-200 group-hover/node:border-blue-400 focus:ring-4 focus:ring-blue-600/5 transition-all"
+                                 />
+                               </div>
+                             </div>
+                           ))}
+                         </div>
+                         <div className="pt-4 flex items-start gap-3">
+                            <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                            <p className="text-[10px] font-bold text-slate-400 leading-relaxed italic">
+                               Propagation to global nodes is synchronous. Changes will be reflected across the entire logistics network immediately upon commitment.
+                            </p>
+                         </div>
                        </div>
-                       <p className="mt-6 text-[10px] font-bold text-slate-400 leading-relaxed italic">
-                          * Updates to stock levels will be propagated to the network immediately.
-                       </p>
-                    </Card>
+                    </div>
                  </div>
               </div>
 
-              {/* Bottom Actions */}
-              <div className="flex items-center justify-between pt-6 border-t border-slate-200">
-                 <Button type="button" variant="ghost" onClick={() => setView('LIST')} className="rounded-xl font-bold text-slate-500">
-                    Cancel and Return
+              {/* Secure Commitment Bar */}
+              <div className="sticky bottom-8 z-50 flex items-center justify-between p-8 bg-slate-900/90 backdrop-blur-xl rounded-[32px] shadow-2xl border border-white/5 mt-16 animate-in slide-in-from-bottom-10 duration-1000 delay-300">
+                 <Button type="button" variant="ghost" onClick={() => setView('LIST')} className="text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl px-8 font-black text-[10px] uppercase tracking-widest gap-3 transition-all">
+                    <X className="h-4 w-4" /> Cancel Protocol
                  </Button>
                  <Button 
                    type="submit" 
                    disabled={submitting}
-                   className="bg-blue-600 hover:bg-blue-700 text-white px-10 h-14 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200"
+                   className="bg-blue-600 hover:bg-blue-700 text-white px-12 h-16 rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-3"
                  >
-                   {submitting ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : <Save className="mr-2 h-5 w-5" />}
+                   {submitting ? <Loader2 className="animate-spin h-5 w-5" /> : <Save className="h-5 w-5" />}
                    {activeView === 'EDIT' ? 'Commit Updates' : 'Authorize Deployment'}
                  </Button>
               </div>

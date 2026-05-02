@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import Link from "next/link";
 import { toast } from "sonner";
+import { ShieldCheck, ArrowRight, Loader2, Package } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -30,73 +31,100 @@ export default function LoginPage() {
       if (result?.error) {
         toast.error("Invalid email or password");
       } else {
-        toast.success("Logged in successfully");
+        toast.success("Identity Verified");
         router.push("/");
         router.refresh();
       }
     } catch (error) {
-      toast.error("An error occurred during sign in");
+      toast.error("System connection failure");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-      <Card className="w-full max-w-md shadow-xl border-t-4 border-t-blue-600">
-        <CardHeader className="text-center space-y-1">
-          <div className="w-12 h-12 bg-blue-600 rounded-lg mx-auto mb-4 flex items-center justify-center text-white font-bold text-xl">
-            A
+    <div className="min-h-screen flex items-center justify-center bg-white lg:bg-slate-50/50 px-4">
+      <div className="w-full max-w-[440px] space-y-8">
+        {/* Branding Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-slate-900 rounded-2xl shadow-xl shadow-slate-200 mb-4 animate-in zoom-in duration-500">
+            <Package className="h-7 w-7 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">Allo Inventory</CardTitle>
-          <CardDescription className="text-slate-500">
-            Secure inventory & reservation platform
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Access Terminal</h1>
+          <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Allo Logistics Infrastructure</p>
+        </div>
+
+        <Card className="border-none shadow-2xl shadow-blue-900/5 rounded-[32px] overflow-hidden bg-white">
+          <CardHeader className="pt-10 px-10 pb-2">
+            <CardTitle className="text-xl font-bold">Sign In</CardTitle>
+            <CardDescription className="text-slate-500 font-medium">Please enter your secure credentials.</CardDescription>
+          </CardHeader>
+          
+          <CardContent className="p-10 pt-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Work Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@allo.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-14 rounded-2xl bg-slate-50 border-slate-100 focus:bg-white transition-all text-base font-medium px-5"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between items-center px-1">
+                  <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Security Key</Label>
+                  <Link href="#" className="text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:underline">Reset Access</Link>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-14 rounded-2xl bg-slate-50 border-slate-100 focus:bg-white transition-all text-base font-medium px-5"
+                  required
+                />
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-blue-600 text-white font-bold text-lg shadow-xl shadow-slate-200 transition-all hover:scale-[1.02] active:scale-[0.98]" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    Authorize Session <ArrowRight className="h-5 w-5" />
+                  </span>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+
+          <CardFooter className="px-10 pb-10 flex flex-col space-y-6 border-t border-slate-50 pt-8">
+            <div className="text-center text-sm font-medium text-slate-500">
+              New to the platform?{" "}
+              <Link href="/register" className="text-blue-600 hover:text-blue-700 font-bold underline-offset-4 hover:underline">
+                Create Operator Account
+              </Link>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+            
+            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+              <ShieldCheck className="h-3 w-3" />
+              <span>End-to-End Encrypted Node</span>
             </div>
-            <Button 
-              type="submit" 
-              className="w-full py-6 text-lg font-medium shadow-sm transition-all hover:scale-[1.01]" 
-              disabled={isLoading}
-            >
-              {isLoading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-center text-sm">
-            Don't have an account?{" "}
-            <Link href="/register" className="text-blue-600 hover:underline font-medium">
-              Register here
-            </Link>
-          </div>
-          <p className="text-center text-xs text-slate-400">
-            © 2026 Allo Healthcare. All rights reserved.
-          </p>
-        </CardFooter>
-      </Card>
+          </CardFooter>
+        </Card>
+        
+        <p className="text-center text-[10px] font-medium text-slate-400 tracking-wide uppercase">
+          © 2026 Allo Healthcare Global. All rights reserved.
+        </p>
+      </div>
     </div>
   );
 }

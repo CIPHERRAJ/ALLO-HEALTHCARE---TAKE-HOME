@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import Link from "next/link";
 import { toast } from "sonner";
+import { ShieldCheck, UserPlus, Loader2, Package, CheckCircle2 } from "lucide-react";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -22,7 +23,7 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error("Security keys do not match");
       return;
     }
 
@@ -39,116 +40,145 @@ export default function RegisterPage() {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to register");
+      if (response.ok) {
+        toast.success("Account Provisioned Successfully");
+        router.push("/login");
+      } else {
+        toast.error(data.error || "Provisioning failed");
       }
-
-      toast.success("Account created! Please sign in.");
-      router.push("/login");
-    } catch (error: any) {
-      toast.error(error.message || "An error occurred during registration");
+    } catch (error) {
+      toast.error("Network synchronization error");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
-      <Card className="w-full max-w-md shadow-xl border-t-4 border-t-blue-600">
-        <CardHeader className="text-center space-y-1">
-          <div className="w-12 h-12 bg-blue-600 rounded-lg mx-auto mb-4 flex items-center justify-center text-white font-bold text-xl">
-            A
+    <div className="min-h-screen flex items-center justify-center bg-white lg:bg-slate-50/50 py-12 px-4">
+      <div className="w-full max-w-[480px] space-y-8">
+        {/* Branding Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-slate-900 rounded-2xl shadow-xl shadow-slate-200 mb-4 animate-in zoom-in duration-500">
+            <Package className="h-7 w-7 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">Create an Account</CardTitle>
-          <CardDescription className="text-slate-500">
-            Join Allo Inventory platform
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Operator Provisioning</h1>
+          <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Initialize Global Access</p>
+        </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-200" />
+        <Card className="border-none shadow-2xl shadow-blue-900/5 rounded-[32px] overflow-hidden bg-white">
+          <CardHeader className="pt-10 px-10 pb-2 text-center sm:text-left">
+            <CardTitle className="text-xl font-bold">New Registration</CardTitle>
+            <CardDescription className="text-slate-500 font-medium">Configure your platform identity.</CardDescription>
+          </CardHeader>
+          
+          <CardContent className="p-10 pt-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</Label>
+                <Input
+                  id="name"
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="h-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all text-sm font-medium px-4"
+                  required
+                />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-400">Optional</span>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Work Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@allo.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all text-sm font-medium px-4"
+                  required
+                />
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="adminSecret">Admin Secret (for staff only)</Label>
-              <Input
-                id="adminSecret"
-                type="password"
-                placeholder="Enter secret to register as Admin"
-                value={adminSecret}
-                onChange={(e) => setAdminSecret(e.target.value)}
-              />
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Security Key</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all text-sm font-medium px-4"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirmPassword" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Confirm Key</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="h-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all text-sm font-medium px-4"
+                    required
+                  />
+                </div>
+              </div>
 
-            <Button 
-              type="submit" 
-              className="w-full py-6 text-lg font-medium shadow-sm transition-all hover:scale-[1.01]" 
-              disabled={isLoading}
-            >
-              {isLoading ? "Creating account..." : "Register"}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-center text-sm">
-            Already have an account?{" "}
-            <Link href="/login" className="text-blue-600 hover:underline font-medium">
-              Sign in here
-            </Link>
-          </div>
-          <p className="text-center text-xs text-slate-400">
-            © 2026 Allo Healthcare. All rights reserved.
-          </p>
-        </CardFooter>
-      </Card>
+              <div className="relative pt-2 pb-1">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-100" />
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
+                  <span className="bg-white px-3 text-slate-300">Staff Credentials</span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="adminSecret" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Administrative Secret (Optional)</Label>
+                <Input
+                  id="adminSecret"
+                  type="password"
+                  placeholder="Enter token for elevated privileges"
+                  value={adminSecret}
+                  onChange={(e) => setAdminSecret(e.target.value)}
+                  className="h-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all text-sm font-medium px-4 border-dashed"
+                />
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-blue-600 text-white font-bold text-lg shadow-xl shadow-slate-200 transition-all hover:scale-[1.02] active:scale-[0.98] mt-4" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    Initialize Account <UserPlus className="h-5 w-5" />
+                  </span>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+
+          <CardFooter className="px-10 pb-10 flex flex-col space-y-6 border-t border-slate-50 pt-8">
+            <div className="text-center text-sm font-medium text-slate-500">
+              Already have access?{" "}
+              <Link href="/login" className="text-blue-600 hover:text-blue-700 font-bold underline-offset-4 hover:underline">
+                Return to Access Terminal
+              </Link>
+            </div>
+            
+            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+              <CheckCircle2 className="h-3 w-3" />
+              <span>Identity Verified via Global Ledger</span>
+            </div>
+          </CardFooter>
+        </Card>
+        
+        <p className="text-center text-[10px] font-medium text-slate-400 tracking-wide uppercase">
+          © 2026 Allo Healthcare Global. All rights reserved.
+        </p>
+      </div>
     </div>
   );
 }

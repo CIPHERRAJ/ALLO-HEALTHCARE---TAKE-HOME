@@ -1,13 +1,28 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from "next-auth/react";
-import { Package, Warehouse, LogOut, Loader2, ChevronRight, ShoppingCart, History, Clock, CheckCircle2, XCircle, ArrowLeft, Filter, Search } from "lucide-react";
+import { 
+  Package, 
+  Warehouse, 
+  LogOut, 
+  Loader2, 
+  ChevronRight, 
+  History, 
+  Clock, 
+  CheckCircle2, 
+  XCircle, 
+  ArrowLeft, 
+  Zap, 
+  ShieldCheck,
+  Search,
+  Download
+} from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 
 interface Reservation {
@@ -39,7 +54,7 @@ export default function CartPage() {
       const data = await res.json();
       setReservations(data);
     } catch (error) {
-      toast.error('Could not load your activity');
+      toast.error('Audit trail synchronization failure');
     } finally {
       setLoading(false);
     }
@@ -49,7 +64,7 @@ export default function CartPage() {
     const isExpired = status === 'PENDING' && new Date(expiresAt) < new Date();
     if (isExpired) return { 
       label: 'EXPIRED', 
-      icon: <Clock className="h-4 w-4" />, 
+      icon: <XCircle className="h-4 w-4" />, 
       color: 'bg-red-50 text-red-700 border-red-100',
       dot: 'bg-red-500'
     };
@@ -68,8 +83,8 @@ export default function CartPage() {
         dot: 'bg-emerald-500'
       };
       case 'RELEASED': return { 
-        label: 'RELEASED', 
-        icon: <XCircle className="h-4 w-4" />, 
+        label: 'VOIDED', 
+        icon: <Zap className="h-4 w-4" />, 
         color: 'bg-slate-50 text-slate-500 border-slate-100',
         dot: 'bg-slate-400'
       };
@@ -84,132 +99,153 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc]">
-        <div className="relative">
-          <div className="h-16 w-16 rounded-full border-4 border-slate-200 border-t-blue-600 animate-spin"></div>
-          <History className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-blue-600" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <div className="relative mb-8">
+          <div className="h-20 w-20 rounded-3xl border-[3px] border-slate-100 border-t-blue-600 animate-spin"></div>
+          <History className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-blue-600" />
         </div>
-        <p className="mt-6 text-slate-600 font-semibold tracking-tight animate-pulse">Retrieving Activity Logs...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">Syncing Transaction History</p>
       </div>
     );
   }
 
-  const pendingCount = reservations.filter(r => r.status === 'PENDING' && new Date(r.expiresAt) > new Date()).length;
+  const isAdmin = (session?.user as any)?.role === 'ADMIN';
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm">
-        <div className="container mx-auto px-6 h-18 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => router.push('/')}>
-            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:bg-blue-600 transition-colors">
+    <div className="min-h-screen bg-white">
+      {/* Precision Navbar */}
+      <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100">
+        <div className="max-w-[1440px] mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-4 group cursor-pointer" onClick={() => router.push('/')}>
+            <div className="w-11 h-11 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-slate-200 transition-transform group-hover:scale-105">
                <ArrowLeft className="h-5 w-5" />
             </div>
             <div>
-              <span className="block font-bold text-slate-900 leading-tight">Activity Log</span>
-              <span className="block text-[10px] uppercase tracking-widest text-slate-400 font-bold">Session ID: {session?.user?.email?.slice(0, 8).toUpperCase()}</span>
+              <span className="block font-black text-slate-900 leading-none tracking-tight text-lg">{isAdmin ? 'Audit Trail' : 'My Activity'}</span>
+              <span className="block text-[9px] uppercase tracking-[0.2em] text-slate-400 font-black mt-1">Operator: {session?.user?.email?.split('@')[0].toUpperCase()}</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={() => router.push('/')} className="rounded-xl border-slate-200 font-bold text-xs uppercase tracking-wider hidden sm:flex">
+          <div className="flex items-center gap-6">
+            <Button variant="outline" onClick={() => router.push('/')} className="h-10 rounded-xl border-slate-100 font-black text-[10px] uppercase tracking-widest px-6 hidden sm:flex">
                Return to Terminal
             </Button>
-            <div className="h-10 w-10 rounded-full bg-blue-100 border-2 border-white shadow-sm flex items-center justify-center">
-               <span className="text-xs font-bold text-blue-700">{session?.user?.name?.[0].toUpperCase()}</span>
+            <div className="h-10 w-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+               <span className="text-xs font-black text-blue-600">{session?.user?.name?.[0].toUpperCase()}</span>
             </div>
           </div>
         </div>
       </nav>
 
-      <main className="container mx-auto py-12 px-6">
-        <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
-            <div>
-               <h1 className="text-3xl font-black text-slate-900 tracking-tight">System Transactions</h1>
-               <p className="text-slate-500 font-medium mt-1">Audit trail for your inventory reservations and fulfillments.</p>
+      <main className="max-w-[1440px] mx-auto py-16 px-6 lg:px-12">
+        <div className="max-w-6xl mx-auto">
+          {/* Dashboard Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-10">
+            <div className="space-y-4">
+               <div className="flex items-center gap-3">
+                  <Badge className="bg-slate-900 text-white border-none px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-md">
+                     System Registry
+                  </Badge>
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Transaction Audit Log</span>
+               </div>
+               <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-none">Global Ledger.</h1>
+               <p className="text-lg text-slate-500 font-medium max-w-xl">
+                  Comprehensive audit trail for all inventory allocations and fulfillment protocols initiated by this node.
+               </p>
             </div>
             
             <div className="flex items-center gap-3">
-               <div className="bg-blue-600 text-white px-4 py-2 rounded-xl shadow-lg shadow-blue-200 flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span className="text-sm font-bold">{pendingCount} Pending holds</span>
-               </div>
+               <Button variant="outline" className="h-12 rounded-xl border-slate-100 gap-2 text-[11px] font-black uppercase tracking-widest px-6 shadow-sm">
+                  <Download className="h-4 w-4" />
+                  Export CSV
+               </Button>
             </div>
           </div>
 
-          {/* Activity List */}
+          {/* Ledger Interface */}
           {reservations.length === 0 ? (
-            <Card className="p-20 text-center border-none shadow-sm bg-white rounded-3xl">
-               <div className="flex flex-col items-center">
-                  <div className="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center mb-6">
-                     <History className="h-10 w-10 text-slate-200" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">No Transaction History</h3>
-                  <p className="text-slate-500 mb-8 max-w-sm font-medium">Your audit log is currently empty. Start by reserving units from the inventory terminal.</p>
-                  <Button onClick={() => router.push('/')} className="bg-slate-900 hover:bg-blue-600 rounded-xl px-8 font-bold transition-all">
-                     Initialize Marketplace
-                  </Button>
+            <div className="py-40 text-center flex flex-col items-center">
+               <div className="w-24 h-24 bg-slate-50 rounded-[40px] flex items-center justify-center mb-8 border border-slate-100/50">
+                  <History className="h-10 w-10 text-slate-200" />
                </div>
-            </Card>
+               <h3 className="text-2xl font-black text-slate-900 mb-2">Registry Empty</h3>
+               <p className="text-slate-400 mb-10 max-w-sm font-medium">No transaction records detected in the current session parameters.</p>
+               <Button onClick={() => router.push('/')} className="h-14 bg-slate-900 hover:bg-blue-600 rounded-2xl px-10 font-bold transition-all shadow-xl shadow-slate-200">
+                  Initialize Terminal
+               </Button>
+            </div>
           ) : (
             <div className="space-y-4">
+              <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">
+                 <div className="col-span-6">Allocation Details</div>
+                 <div className="col-span-3">Status Matrix</div>
+                 <div className="col-span-3 text-right">Actions</div>
+              </div>
+
               {reservations.map((res) => {
                 const config = getStatusConfig(res.status, res.expiresAt);
                 const isPending = res.status === 'PENDING' && config.label !== 'EXPIRED';
                 
                 return (
-                  <Card key={res.id} className="group overflow-hidden border-none shadow-sm hover:shadow-md transition-all bg-white rounded-2xl">
-                    <div className="flex flex-col sm:flex-row sm:items-center p-5 gap-6">
-                      {/* Left: Status Icon */}
-                      <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${config.color} border group-hover:scale-110 transition-transform`}>
-                        {config.icon}
-                      </div>
-                      
-                      {/* Middle: Info */}
-                      <div className="flex-grow">
-                        <div className="flex flex-wrap items-center gap-3 mb-1">
-                          <h3 className="text-lg font-bold text-slate-900 leading-none">{res.product.name}</h3>
-                          <Badge variant="outline" className={`border-none font-bold text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-lg ${config.color}`}>
-                             <span className={`w-1.5 h-1.5 rounded-full mr-2 ${config.dot}`} />
-                             {config.label}
-                          </Badge>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-400">
-                           <div className="flex items-center gap-1.5">
-                              <Warehouse className="h-3.5 w-3.5" />
-                              {res.warehouse.name}
+                  <Card key={res.id} className="group border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_30px_-8px_rgba(0,0,0,0.06)] transition-all duration-300 bg-white rounded-3xl overflow-hidden">
+                    <CardContent className="p-0">
+                      <div className="grid grid-cols-1 md:grid-cols-12 items-center p-6 lg:p-8 gap-8">
+                        {/* Allocation Details */}
+                        <div className="md:col-span-6 flex items-center gap-6">
+                           <div className={`h-16 w-16 rounded-2xl flex items-center justify-center shrink-0 border transition-all duration-300 ${config.color} group-hover:scale-105`}>
+                              {config.icon}
                            </div>
-                           <div className="flex items-center gap-1.5">
-                              <Package className="h-3.5 w-3.5" />
-                              {res.units} Units • ${(res.units * (res.product.price ?? 0)).toLocaleString()}
+                           <div className="space-y-2">
+                              <div className="flex items-center gap-3">
+                                 <h3 className="text-lg font-black text-slate-900 tracking-tight">{res.product.name}</h3>
+                                 <span className="text-[10px] font-black text-slate-200 uppercase tracking-widest">#{res.id.slice(-6).toUpperCase()}</span>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-black text-slate-400 uppercase tracking-[0.1em]">
+                                 <div className="flex items-center gap-1.5">
+                                    <Warehouse className="h-3 w-3" />
+                                    {res.warehouse.name}
+                                 </div>
+                                 <div className="flex items-center gap-1.5">
+                                    <Package className="h-3 w-3" />
+                                    {res.units} Units • ${(res.units * (res.product.price ?? 0)).toLocaleString()}
+                                 </div>
+                                 <div className="flex items-center gap-1.5">
+                                    <Clock className="h-3 w-3" />
+                                    {formatDistanceToNow(new Date(res.createdAt), { addSuffix: true })}
+                                 </div>
+                              </div>
                            </div>
-                           <div className="text-slate-300">•</div>
-                           <div>{formatDistanceToNow(new Date(res.createdAt), { addSuffix: true })}</div>
                         </div>
-                      </div>
 
-                      {/* Right: Actions */}
-                      <div className="flex items-center gap-3 shrink-0">
-                         {isPending ? (
-                           <Button 
-                             onClick={() => router.push(`/checkout/${res.id}`)}
-                             className="bg-blue-600 hover:bg-blue-700 rounded-xl font-bold shadow-lg shadow-blue-100 px-6 group/btn"
-                           >
-                             Complete <ChevronRight className="ml-1.5 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                           </Button>
-                         ) : (
-                           <Button 
-                             variant="ghost" 
-                             onClick={() => router.push(`/checkout/${res.id}`)}
-                             className="text-slate-400 hover:text-slate-900 font-bold text-xs uppercase tracking-widest"
-                           >
-                             Details
-                           </Button>
-                         )}
+                        {/* Status Matrix */}
+                        <div className="md:col-span-3">
+                           <Badge variant="outline" className={`border-none font-black text-[9px] tracking-[0.2em] uppercase px-4 py-2 rounded-xl flex items-center w-fit gap-2.5 ${config.color}`}>
+                              <span className={`w-2 h-2 rounded-full shadow-sm ${config.dot}`} />
+                              {config.label}
+                           </Badge>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="md:col-span-3 flex justify-end items-center gap-4">
+                           {isPending ? (
+                             <Button 
+                               onClick={() => router.push(`/checkout/${res.id}`)}
+                               className="h-12 bg-blue-600 hover:bg-blue-700 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-100 px-8 group/btn transition-all active:scale-95"
+                             >
+                               Finalize <ChevronRight className="ml-2 h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
+                             </Button>
+                           ) : (
+                             <Button 
+                               variant="ghost" 
+                               onClick={() => router.push(`/checkout/${res.id}`)}
+                               className="h-12 text-slate-400 hover:text-slate-900 font-black text-[10px] uppercase tracking-widest px-6"
+                             >
+                               Details
+                             </Button>
+                           )}
+                        </div>
                       </div>
-                    </div>
+                    </CardContent>
                   </Card>
                 );
               })}
@@ -218,9 +254,15 @@ export default function CartPage() {
         </div>
       </main>
       
-      <footer className="mt-20 border-t border-slate-200 py-12 bg-white">
-         <div className="container mx-auto px-6 flex flex-col items-center text-center">
-            <p className="text-slate-400 text-sm font-medium italic">"Ensuring integrity in every reservation."</p>
+      <footer className="mt-40 border-t border-slate-100 py-16 bg-white">
+         <div className="max-w-[1440px] mx-auto px-6 flex flex-col items-center text-center space-y-6">
+            <div className="flex items-center gap-2 opacity-30 grayscale">
+               <ShieldCheck className="h-5 w-5" />
+               <span className="text-sm font-black tracking-tighter uppercase">Protocol Integrity</span>
+            </div>
+            <p className="text-slate-300 text-[9px] font-black uppercase tracking-[0.4em] italic">
+               "Ensuring integrity in every atomic reservation."
+            </p>
          </div>
       </footer>
     </div>
