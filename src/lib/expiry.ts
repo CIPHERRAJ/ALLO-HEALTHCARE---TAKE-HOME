@@ -50,6 +50,8 @@ export async function cleanupExpiredReservations() {
             data: { status: 'RELEASED' },
           });
         }
+      }, {
+        timeout: 15000 // 15 seconds
       });
     } catch (error) {
       console.error(`Failed to cleanup reservation ${reservation.id}:`, error);

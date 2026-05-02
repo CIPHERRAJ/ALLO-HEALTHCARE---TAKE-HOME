@@ -58,6 +58,8 @@ export async function POST(
         where: { id },
         data: { status: 'CONFIRMED' },
       });
+    }, {
+      timeout: 15000 // 15 seconds
     });
 
     if (idempotencyKey && redisEnabled) {

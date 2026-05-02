@@ -43,6 +43,8 @@ export async function POST(
         where: { id },
         data: { status: 'RELEASED' },
       });
+    }, {
+      timeout: 15000 // 15 seconds
     });
 
     return NextResponse.json(updatedReservation);

@@ -77,6 +77,8 @@ export async function POST(req: NextRequest) {
           idempotencyKey,
         },
       });
+    }, {
+      timeout: 15000 // 15 seconds
     });
 
     if (idempotencyKey && redisEnabled) {
