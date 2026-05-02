@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name } = await req.json();
+    const { email, password, name, isAdminRegistration } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -26,12 +26,27 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    let role: 'USER' | 'ADMIN' = 'USER';
+    
+    // One-time Admin Registration Logic
+    if (isAdminRegistration) {
+      const adminCount = await prisma.user.count({ where: { role: 'ADMIN' } });
+      if (adminCount === 0) {
+        role = 'ADMIN';
+      } else {
+        return NextResponse.json(
+          { error: "An administrator already exists. This option is no longer available." },
+          { status: 403 }
+        );
+      }
+    }
+
     const user = await prisma.user.create({
       data: {
         email,
         name,
         password: hashedPassword,
-        role: 'USER',
+        role: role,
       },
     });
 

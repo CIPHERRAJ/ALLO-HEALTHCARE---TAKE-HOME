@@ -14,8 +14,24 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isAdminRegistration, setIsAdminRegistration] = useState(false);
+  const [adminExists, setAdminExists] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  const checkAdminStatus = async () => {
+    try {
+      const res = await fetch('/api/register/status');
+      const data = await res.json();
+      setAdminExists(data.adminExists);
+    } catch (e) {
+      setAdminExists(true);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +49,7 @@ export default function RegisterPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, isAdminRegistration }),
       });
 
       const data = await response.json();
@@ -106,6 +122,25 @@ export default function RegisterPage() {
                 required
               />
             </div>
+
+            {!adminExists && (
+              <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
+                 <div className="mt-0.5">
+                    <input 
+                      id="adminMode"
+                      type="checkbox" 
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
+                      checked={isAdminRegistration}
+                      onChange={(e) => setIsAdminRegistration(e.target.checked)}
+                    />
+                 </div>
+                 <Label htmlFor="adminMode" className="cursor-pointer">
+                    <span className="block font-bold text-blue-900 text-sm">Register as System Administrator</span>
+                    <span className="block text-[11px] text-blue-700/70 font-medium">No admin detected. This is a one-time setup opportunity.</span>
+                 </Label>
+              </div>
+            )}
+
             <Button 
               type="submit" 
               className="w-full py-6 text-lg font-medium shadow-sm transition-all hover:scale-[1.01]" 
