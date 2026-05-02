@@ -14,15 +14,13 @@ This is a Next.js application built for the Allo Engineering Take-Home Exercise.
 ## Features
 
 1. **Race-Condition-Free Reservations**: Uses Postgres Row-Level Locking (`SELECT ... FOR UPDATE`) within Prisma transactions to guarantee that stock is never over-reserved.
-2. **Google Authentication**: Integrated with NextAuth.js (Auth.js) to secure the reservation process. Users must be logged in to hold items.
+2. **Custom Authentication**: Integrated with NextAuth.js (Auth.js) using Email & Password. Users can register and login to secure the reservation process.
 3. **Idempotency**: Implemented for both Reservation and Confirmation endpoints using an `Idempotency-Key` header and Redis.
 4. **Live Countdown**: A real-time countdown on the checkout page shows when a reservation will expire.
 5. **Automated Expiry**: Reservations are automatically released if not confirmed within 10 minutes.
 6. **Responsive UI**: Built with shadcn/ui and Tailwind for a modern look.
 
 ## How to Run Locally
-
-Since this app uses SQLite for local development, you don't need to install any database or Docker.
 
 ### 1. Prerequisites
 - Node.js 20+
@@ -32,13 +30,10 @@ Create a `.env` file in the root directory:
 
 ```env
 # Database
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="your-database-url"
 
 # NextAuth (Authentication)
-NEXTAUTH_SECRET="your-secret-here"
-NEXTAUTH_URL="http://localhost:3000"
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
+AUTH_SECRET="your-secret-here"
 
 # Optional: Redis for Idempotency
 UPSTASH_REDIS_REST_URL=""
@@ -52,9 +47,8 @@ npm install
 
 ### 4. Database Setup & Seeding
 ```bash
-# This creates a local dev.db file and the tables (including Auth models)
-npx prisma migrate dev --name init
-# This populates the local database with products and stock
+npx prisma generate
+npx prisma db push
 npx prisma db seed
 ```
 
@@ -63,15 +57,14 @@ npx prisma db seed
 npm run dev
 ```
 
-## Authentication Setup (Google OAuth)
+## Authentication Setup (Email/Password)
 
-To enable Google Login:
-1.  Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2.  Create a new project.
-3.  Go to **APIs & Services > Credentials**.
-4.  Create an **OAuth 2.0 Client ID**.
-5.  Add `http://localhost:3000/api/auth/callback/google` to the **Authorized redirect URIs**.
-6.  Copy the Client ID and Client Secret into your `.env` file.
+The application uses custom email and password authentication.
+
+1.  **Registration**: New users can create an account at `/register`.
+2.  **Login**: Users can sign in at `/login`.
+3.  **Security**: Passwords are hashed using `bcryptjs` before being stored in the database.
+
 
 ## Moving to Production (PostgreSQL)
 
