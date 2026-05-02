@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ShieldCheck, ArrowRight, Loader2, Package } from "lucide-react";
+import { ShieldCheck, ArrowRight, Loader2, Package, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -80,14 +81,23 @@ export default function LoginPage() {
                   <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Security Key</Label>
                   <Link href="#" className="text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:underline">Reset Access</Link>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-14 rounded-2xl bg-slate-50 border-slate-100 focus:bg-white transition-all text-base font-medium px-5"
-                  required
-                />
+                <div className="relative group/pass">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-14 rounded-2xl bg-slate-50 border-slate-100 focus:bg-white transition-all text-base font-medium px-5 pr-12"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 transition-colors p-1"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
 
               <Button 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/lib/cart-store';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, X, Trash2, Loader2, ChevronRight, Package, Warehouse, Zap, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
