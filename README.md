@@ -25,9 +25,25 @@ Idempotency is implemented for the `POST /api/reservations` and `POST /api/reser
 4.  **Transaction**: If the request is new, it proceeds with the transaction. Once successful, the result is cached in Redis with a 1-hour TTL.
 
 This ensures that if a network timeout occurs and the client retries, the server won't decrement stock twice or create duplicate reservations.
-4. **Live Countdown**: A real-time countdown on the checkout page shows when a reservation will expire.
-5. **Automated Expiry**: Reservations are automatically released if not confirmed within 10 minutes.
-6. **Responsive UI**: Built with shadcn/ui and Tailwind for a modern look.
+4. **Admin Dashboard**: A secure interface for managing products, setting prices, and allocating stock levels across warehouses.
+5. **Role-Based Access Control (RBAC)**: Users are categorized as `USER` or `ADMIN`, with the latter having exclusive access to the management console.
+6. **Soft Hold Transparency**: The system distinguishes between "Sold Out" and "Temporarily Held" units, providing "Next Release" countdowns to improve conversion.
+7. **Responsive UI**: Built with shadcn/ui and Tailwind for a modern look.
+
+## Admin Dashboard & Setup
+
+The application now includes an **Admin Console** at `/admin`.
+
+### 1. Promoting a User to Admin
+To create an admin account:
+1. Set an `ADMIN_SECRET` in your `.env` file.
+2. During registration (`/register`), include the `adminSecret` in the request body (via API) or use the updated registration form.
+3. Once logged in as an ADMIN, an "Admin Console" link will appear in the main navigation bar.
+
+### 2. Capabilities
+- **Create Products**: Set product name, price, and description.
+- **Stock Management**: Allocate initial stock units to any active warehouse in the network.
+- **Price Tracking**: All products now have a `price` field which is tracked through the reservation and checkout lifecycle.
 
 ## How to Run Locally
 

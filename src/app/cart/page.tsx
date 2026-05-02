@@ -18,7 +18,7 @@ interface Reservation {
   status: 'PENDING' | 'CONFIRMED' | 'RELEASED';
   expiresAt: string;
   createdAt: string;
-  product: { name: string };
+  product: { name: string; price: number };
   warehouse: { name: string };
 }
 
@@ -183,7 +183,7 @@ export default function CartPage() {
                            </div>
                            <div className="flex items-center gap-1.5">
                               <Package className="h-3.5 w-3.5" />
-                              {res.units} Units
+                              {res.units} Units • ${(res.units * res.product.price).toLocaleString()}
                            </div>
                            <div className="text-slate-300">•</div>
                            <div>{formatDistanceToNow(new Date(res.createdAt), { addSuffix: true })}</div>

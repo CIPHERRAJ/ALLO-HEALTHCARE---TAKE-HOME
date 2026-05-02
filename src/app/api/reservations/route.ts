@@ -143,6 +143,10 @@ export async function POST(req: NextRequest) {
     }
 
     console.error('Reservation error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Internal Server Error',
+      details: error.message,
+      code: error.code 
+    }, { status: 500 });
   }
 }

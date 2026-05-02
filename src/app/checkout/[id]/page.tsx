@@ -14,7 +14,7 @@ interface Reservation {
   status: 'PENDING' | 'CONFIRMED' | 'RELEASED';
   expiresAt: string;
   units: number;
-  product: { name: string };
+  product: { name: string; price: number };
   warehouse: { name: string };
 }
 
@@ -184,8 +184,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                   </div>
                 </div>
                 <div className="ml-auto text-right">
-                   <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Quantity</p>
-                   <p className="text-2xl font-black text-blue-600">{reservation.units}</p>
+                   <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Total Price</p>
+                   <p className="text-2xl font-black text-blue-600">${(reservation.units * reservation.product.price).toLocaleString()}</p>
+                   <p className="text-[10px] text-slate-400 font-bold mt-1">{reservation.units} x ${reservation.product.price.toLocaleString()}</p>
                 </div>
               </div>
 

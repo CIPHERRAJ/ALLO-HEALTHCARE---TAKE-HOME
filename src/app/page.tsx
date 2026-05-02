@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from "next-auth/react";
-import { Package, Warehouse, LogOut, Loader2, ChevronRight, ShoppingCart, Info, Activity, Globe, Box, ShieldCheck, Clock, AlertTriangle } from "lucide-react";
+import { Package, Warehouse, LogOut, Loader2, ChevronRight, ShoppingCart, Info, Activity, Globe, Box, ShieldCheck, Clock, AlertTriangle, Settings } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 
 interface Stock {
@@ -24,6 +24,7 @@ interface Product {
   name: string;
   description: string;
   stocks: Stock[];
+  price: number;
 }
 
 export default function ProductsPage() {
@@ -111,6 +112,12 @@ export default function ProductsPage() {
           
           <div className="flex items-center gap-6">
             <div className="hidden md:flex items-center gap-4 border-r pr-6 border-slate-200">
+               {(session?.user as any)?.role === 'ADMIN' && (
+                 <Button variant="ghost" onClick={() => router.push('/admin')} className="text-blue-600 hover:bg-blue-50 flex items-center gap-2 font-bold transition-all">
+                   <Settings className="h-4 w-4" />
+                   Admin Console
+                 </Button>
+               )}
                <Button variant="ghost" onClick={() => router.push('/cart')} className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 flex items-center gap-2 font-semibold transition-all">
                  <ShoppingCart className="h-4 w-4" />
                  My Activity
@@ -189,7 +196,10 @@ export default function ProductsPage() {
                 <div className="md:w-[60%] flex flex-col p-8">
                   <div className="mb-8">
                     <div className="flex justify-between items-start mb-2">
-                      <CardTitle className="text-2xl font-bold text-slate-900">{product.name}</CardTitle>
+                      <div className="flex-grow">
+                        <CardTitle className="text-2xl font-bold text-slate-900">{product.name}</CardTitle>
+                        <p className="text-blue-600 font-black text-xl mt-1 tracking-tight">${product.price.toLocaleString()}</p>
+                      </div>
                       <ShieldCheck className="h-5 w-5 text-blue-500/30 group-hover:text-blue-500 transition-colors" />
                     </div>
                     <CardDescription className="text-slate-500 text-sm leading-relaxed line-clamp-2 font-medium">

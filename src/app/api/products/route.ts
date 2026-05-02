@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { cleanupExpiredReservations } from '@/lib/expiry';
+import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,7 @@ export async function GET() {
       id: product.id,
       name: product.name,
       description: product.description,
+      price: product.price,
       stocks: product.stocks.map((stock) => {
         // Find the earliest expiry for this specific warehouse
         const warehouseReservations = product.reservations.filter(
@@ -58,5 +60,42 @@ export async function GET() {
       details: error.message,
       code: error.code 
     }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user || (session.user as any).role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
+  }
+
+  try {
+    const { name, description, price, stocks } = await req.json();
+
+    if (!name || price === undefined) {
+      return NextResponse.json({ error: 'Name and price are required' }, { status: 400 });
+    }
+
+    const product = await prisma.product.create({
+      data: {
+        name,
+        description,
+        price: parseFloat(price),
+        stocks: {
+          create: stocks?.map((s: any) => ({
+            warehouseId: s.warehouseId,
+            totalUnits: parseInt(s.totalUnits),
+          })) || [],
+        },
+      },
+      include: {
+        stocks: true,
+      },
+    });
+
+    return NextResponse.json(product, { status: 201 });
+  } catch (error: any) {
+    console.error('ADMIN_PRODUCT_CREATE_ERROR:', error);
+    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
   }
 }

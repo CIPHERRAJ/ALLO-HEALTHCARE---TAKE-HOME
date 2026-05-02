@@ -41,6 +41,11 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -48,6 +53,7 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
+  role          UserRole  @default(USER)
   accounts      Account[]
   sessions      Session[]
   reservations  Reservation[]
@@ -65,6 +71,7 @@ model Product {
   id           String        @id @default(cuid())
   name         String
   description  String?
+  price        Float         @default(0)
   stocks       Stock[]
   reservations Reservation[]
 }
