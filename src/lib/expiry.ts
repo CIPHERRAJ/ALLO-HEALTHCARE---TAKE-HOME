@@ -3,13 +3,17 @@ import prisma from './prisma';
 export async function cleanupExpiredReservations() {
   const now = new Date();
 
-  // Find all pending reservations that have expired
+  // Find all pending reservations that have expired (limit to 10 to avoid timeouts)
   const expiredReservations = await prisma.reservation.findMany({
     where: {
       status: 'PENDING',
       expiresAt: {
         lt: now,
       },
+    },
+    take: 10,
+    orderBy: {
+      expiresAt: 'asc',
     },
   });
 

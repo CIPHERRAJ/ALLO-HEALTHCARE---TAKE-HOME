@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { cleanupExpiredReservations } from '@/lib/expiry';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -10,7 +12,11 @@ export async function GET(
 
   try {
     // Lazy cleanup of expired reservations
-    await cleanupExpiredReservations();
+    try {
+      await cleanupExpiredReservations();
+    } catch (e) {
+      console.error('Lazy cleanup failed in GET reservation:', e);
+    }
 
     const reservation = await prisma.reservation.findUnique({
       where: { id },
