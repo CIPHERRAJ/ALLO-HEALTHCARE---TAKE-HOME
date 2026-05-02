@@ -14,33 +14,44 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log("AUTH_ATTEMPT", { email: credentials?.email });
-        if (!credentials?.email || !credentials?.password) {
+        const email = (credentials?.email as string)?.toLowerCase()?.trim();
+        const password = credentials?.password as string;
+        
+        console.log("AUTH_ATTEMPT", { email });
+        
+        if (!email || !password) {
           console.log("AUTH_MISSING_CREDENTIALS");
           return null;
         }
 
         try {
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email as string }
+            where: { email }
           });
 
-          if (!user || !user.password) {
-            console.log("AUTH_USER_NOT_FOUND", { email: credentials.email });
+          if (!user) {
+            console.log("AUTH_USER_NOT_FOUND", { email });
             return null;
           }
 
-          const isPasswordValid = await bcrypt.compare(
-            credentials.password as string,
-            user.password
-          );
+          if (!user.password) {
+            console.log("AUTH_USER_NO_PASSWORD", { email });
+            return null;
+          }
+
+          const isPasswordValid = await bcrypt.compare(password, user.password);
+
+          console.log("AUTH_PASSWORD_CHECK", { 
+            email, 
+            isValid: isPasswordValid,
+            hashPrefix: user.password.substring(0, 10) 
+          });
 
           if (!isPasswordValid) {
-            console.log("AUTH_INVALID_PASSWORD", { email: credentials.email });
             return null;
           }
 
-          console.log("AUTH_SUCCESS", { email: credentials.email });
+          console.log("AUTH_SUCCESS", { email, role: user.role });
           return {
             id: user.id,
             email: user.email,
@@ -48,7 +59,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             role: user.role,
           };
         } catch (error: any) {
-          console.error("AUTH_ERROR", error);
+          console.error("AUTH_ERROR", { 
+            email, 
+            message: error.message, 
+            code: error.code,
+            stack: error.stack 
+          });
           return null;
         }
       }
