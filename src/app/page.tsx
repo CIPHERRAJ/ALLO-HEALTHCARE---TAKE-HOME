@@ -7,8 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from "next-auth/react";
-import { Package, Warehouse, LogOut, Loader2, ChevronRight, ShoppingCart, Info, Activity, Globe, Box, ShieldCheck, Clock, AlertTriangle, Settings } from "lucide-react";
+import { Package, Warehouse, LogOut, Loader2, ChevronRight, ShoppingCart, Info, Activity, Globe, Box, ShieldCheck, Clock, AlertTriangle, Settings, Plus } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
+import { useCart } from '@/lib/cart-store';
+import { CartSheet } from '@/components/cart-sheet';
 
 interface Stock {
   warehouseId: string;
@@ -30,9 +32,9 @@ interface Product {
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reservingId, setReservingId] = useState<string | null>(null);
   const router = useRouter();
   const { data: session } = useSession();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     fetchProducts();
@@ -51,36 +53,16 @@ export default function ProductsPage() {
     }
   };
 
-  const handleReserve = async (productId: string, warehouseId: string) => {
-    setReservingId(`${productId}-${warehouseId}`);
-    try {
-      const res = await fetch('/api/reservations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Idempotency-Key': crypto.randomUUID(),
-        },
-        body: JSON.stringify({ productId, warehouseId, units: 1 }),
-      });
-
-      if (res.status === 409) {
-        toast.error('This item just went out of stock');
-        return;
-      }
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Reservation system unavailable');
-      }
-
-      const reservation = await res.json();
-      toast.success('Inventory hold secured');
-      router.push(`/checkout/${reservation.id}`);
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setReservingId(null);
-    }
+  const handleAddToCart = (product: Product, stock: Stock) => {
+    addToCart({
+      productId: product.id,
+      productName: product.name,
+      warehouseId: stock.warehouseId,
+      warehouseName: stock.warehouseName,
+      price: product.price,
+      units: 1,
+    });
+    toast.success(`${product.name} added to cart from ${stock.warehouseName}`);
   };
 
   if (loading) {
@@ -118,9 +100,10 @@ export default function ProductsPage() {
                    Admin Console
                  </Button>
                )}
+               <CartSheet />
                <Button variant="ghost" onClick={() => router.push('/cart')} className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 flex items-center gap-2 font-semibold transition-all">
-                 <ShoppingCart className="h-4 w-4" />
-                 My Activity
+                 <Activity className="h-4 w-4" />
+                 Activity
                </Button>
             </div>
             
@@ -272,18 +255,16 @@ export default function ProductsPage() {
                                 ? "bg-slate-900 hover:bg-blue-600 text-white shadow-md hover:shadow-blue-500/20" 
                                 : "cursor-not-allowed opacity-40"
                               }`}
-                              disabled={stock.availableUnits <= 0 || !!reservingId}
-                              onClick={() => handleReserve(product.id, stock.warehouseId)}
+                              disabled={stock.availableUnits <= 0}
+                              onClick={() => handleAddToCart(product, stock)}
                             >
-                              {reservingId === `${product.id}-${stock.warehouseId}` ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : isSoldOut ? (
+                              {isSoldOut ? (
                                 'Sold Out'
                               ) : isFullyReserved ? (
                                 'On Hold'
                               ) : (
                                 <>
-                                  Reserve <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
+                                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Add to Cart
                                 </>
                               )}
                             </Button>

@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [adminSecret, setAdminSecret] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -33,7 +34,7 @@ export default function RegisterPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, adminSecret }),
       });
 
       const data = await response.json();
@@ -104,6 +105,26 @@ export default function RegisterPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+              />
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-slate-400">Optional</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="adminSecret">Admin Secret (for staff only)</Label>
+              <Input
+                id="adminSecret"
+                type="password"
+                placeholder="Enter secret to register as Admin"
+                value={adminSecret}
+                onChange={(e) => setAdminSecret(e.target.value)}
               />
             </div>
 

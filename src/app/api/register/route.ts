@@ -5,10 +5,16 @@ import prisma from "@/lib/prisma";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, password, name } = body;
+    const { email, password, name, adminSecret } = body;
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+    }
+
+    // Determine role based on admin secret
+    let role: 'USER' | 'ADMIN' = 'USER';
+    if (adminSecret && adminSecret === process.env.ADMIN_SECRET) {
+      role = 'ADMIN';
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -26,7 +32,7 @@ export async function POST(req: Request) {
         email,
         name,
         password: hashedPassword,
-        role: 'USER',
+        role,
       },
     });
 

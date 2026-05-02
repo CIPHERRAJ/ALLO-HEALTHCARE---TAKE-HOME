@@ -5,11 +5,16 @@ import { redis, redisEnabled } from '@/lib/redis';
 import { auth } from '@/auth';
 import { cleanupExpiredReservations } from '@/lib/expiry';
 
-const reservationSchema = z.object({
+const reservationItemSchema = z.object({
   productId: z.string(),
   warehouseId: z.string(),
   units: z.number().int().positive(),
 });
+
+const reservationSchema = z.union([
+  reservationItemSchema,
+  z.array(reservationItemSchema)
+]);
 
 export const dynamic = 'force-dynamic';
 
@@ -57,7 +62,8 @@ export async function POST(req: NextRequest) {
   
   try {
     const body = await req.json();
-    const { productId, warehouseId, units } = reservationSchema.parse(body);
+    const parsed = reservationSchema.parse(body);
+    const items = Array.isArray(parsed) ? parsed : [parsed];
 
     // Idempotency check
     if (idempotencyKey && redisEnabled) {
@@ -67,77 +73,91 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const reservation = await prisma.$transaction(async (tx) => {
-      // 1. Lock the stock row and check availability
-      // Note: SQLite doesn't support FOR UPDATE. In SQLite, the $transaction with default isolation
-      // handles the lock when the first write occurs. For production Postgres, FOR UPDATE is better.
-      const isSqlite = (prisma as any)._activeProvider === 'sqlite';
-      const stocks = await tx.$queryRawUnsafe<any[]>(
-        isSqlite 
-          ? `SELECT * FROM "Stock" WHERE "productId" = ? AND "warehouseId" = ?`
-          : `SELECT * FROM "Stock" WHERE "productId" = $1 AND "warehouseId" = $2 FOR UPDATE`,
-        productId,
-        warehouseId
+    const results = await prisma.$transaction(async (tx) => {
+      // 1. Sort items by productId + warehouseId to prevent deadlocks when locking multiple rows
+      const sortedItems = [...items].sort((a, b) => 
+        `${a.productId}-${a.warehouseId}`.localeCompare(`${b.productId}-${b.warehouseId}`)
       );
 
-      if (stocks.length === 0) {
-        throw new Error('STOCK_NOT_FOUND');
-      }
+      const createdReservations = [];
 
-      const stock = stocks[0];
-      const availableUnits = stock.totalUnits - stock.reservedUnits;
+      for (const item of sortedItems) {
+        const { productId, warehouseId, units } = item;
 
-      if (availableUnits < units) {
-        throw new Error('INSUFFICIENT_STOCK');
-      }
-
-      // 2. Increment reserved units
-      await tx.stock.update({
-        where: {
-          productId_warehouseId: { productId, warehouseId },
-        },
-        data: {
-          reservedUnits: { increment: units },
-        },
-      });
-
-      // 3. Create reservation
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-      return await tx.reservation.create({
-        data: {
+        // 2. Lock the stock row and check availability
+        const isSqlite = (prisma as any)._activeProvider === 'sqlite';
+        const stocks = await tx.$queryRawUnsafe<any[]>(
+          isSqlite 
+            ? `SELECT * FROM "Stock" WHERE "productId" = ? AND "warehouseId" = ?`
+            : `SELECT * FROM "Stock" WHERE "productId" = $1 AND "warehouseId" = $2 FOR UPDATE`,
           productId,
-          warehouseId,
-          userId: (session.user as any).id,
-          units,
-          expiresAt,
-          status: 'PENDING',
-          idempotencyKey,
-        },
-      });
+          warehouseId
+        );
+
+        if (stocks.length === 0) {
+          throw new Error(`STOCK_NOT_FOUND:${productId}`);
+        }
+
+        const stock = stocks[0];
+        const availableUnits = stock.totalUnits - stock.reservedUnits;
+
+        if (availableUnits < units) {
+          throw new Error(`INSUFFICIENT_STOCK:${productId}`);
+        }
+
+        // 3. Increment reserved units
+        await tx.stock.update({
+          where: {
+            productId_warehouseId: { productId, warehouseId },
+          },
+          data: {
+            reservedUnits: { increment: units },
+          },
+        });
+
+        // 4. Create reservation
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const res = await tx.reservation.create({
+          data: {
+            productId,
+            warehouseId,
+            userId: (session.user as any).id,
+            units,
+            expiresAt,
+            status: 'PENDING',
+            idempotencyKey: items.length === 1 ? idempotencyKey : `${idempotencyKey}:${productId}`, // Key per item for batches
+          },
+        });
+        createdReservations.push(res);
+      }
+
+      return createdReservations;
     }, {
-      timeout: 15000 // 15 seconds
+      timeout: 20000 // 20 seconds for potential batch processing
     });
 
+    const finalResponse = items.length === 1 ? results[0] : results;
+
     if (idempotencyKey && redisEnabled) {
-      await redis.set(`idempotency:reserve:${idempotencyKey}`, reservation, { ex: 3600 });
+      await redis.set(`idempotency:reserve:${idempotencyKey}`, finalResponse, { ex: 3600 });
     }
 
-    return NextResponse.json(reservation, { status: 201 });
+    return NextResponse.json(finalResponse, { status: 201 });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 });
     }
-    if (error.message === 'INSUFFICIENT_STOCK') {
-      return NextResponse.json({ error: 'Not enough stock available' }, { status: 409 });
+    if (error.message.startsWith('INSUFFICIENT_STOCK')) {
+      return NextResponse.json({ error: 'Not enough stock available', item: error.message.split(':')[1] }, { status: 409 });
     }
-    if (error.message === 'STOCK_NOT_FOUND') {
-      return NextResponse.json({ error: 'Stock record not found' }, { status: 404 });
+    if (error.message.startsWith('STOCK_NOT_FOUND')) {
+      return NextResponse.json({ error: 'Stock record not found', item: error.message.split(':')[1] }, { status: 404 });
     }
     
-    // Handle unique constraint violation for idempotencyKey if redis check failed/raced
-    if (error.code === 'P2002') {
-        const existing = await prisma.reservation.findUnique({
-            where: { idempotencyKey: idempotencyKey! }
+    // Handle unique constraint violation for idempotencyKey
+    if (error.code === 'P2002' && idempotencyKey) {
+        const existing = await prisma.reservation.findFirst({
+            where: { idempotencyKey: { startsWith: idempotencyKey } }
         });
         return NextResponse.json(existing);
     }

@@ -24,6 +24,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [processing, setProcessing] = useState(false);
+  // Stable idempotency key for this page instance
+  const [confirmationKey] = useState(typeof window !== 'undefined' ? crypto.randomUUID() : '');
   const router = useRouter();
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       const res = await fetch(`/api/reservations/${id}/confirm`, {
         method: 'POST',
         headers: {
-          'Idempotency-Key': crypto.randomUUID(),
+          'Idempotency-Key': confirmationKey,
         },
       });
 
@@ -240,7 +242,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                     disabled={processing}
                   >
                     {processing ? <Loader2 className="animate-spin mr-2" /> : <CreditCard className="mr-2 h-4 w-4" />}
-                    Finalize Payment
+                    Confirm Purchase
                   </Button>
                   <Button 
                     variant="ghost" 
@@ -248,7 +250,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                     onClick={handleCancel} 
                     disabled={processing}
                   >
-                    Release Allocation
+                    Cancel Reservation
                   </Button>
                 </div>
               ) : (
