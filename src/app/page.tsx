@@ -100,10 +100,10 @@ export default function ProductsPage() {
                    Admin Console
                  </Button>
                )}
-               <CartSheet />
+               {(session?.user as any)?.role !== 'ADMIN' && <CartSheet />}
                <Button variant="ghost" onClick={() => router.push('/cart')} className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 flex items-center gap-2 font-semibold transition-all">
                  <Activity className="h-4 w-4" />
-                 Activity
+                 {(session?.user as any)?.role === 'ADMIN' ? 'Transaction Audit' : 'My Activity'}
                </Button>
             </div>
             
@@ -247,27 +247,29 @@ export default function ProductsPage() {
                               </div>
                             </div>
 
-                            <Button
-                              size="sm"
-                              variant={stock.availableUnits > 0 ? "default" : "secondary"}
-                              className={`rounded-xl px-5 font-bold transition-all ${
-                                stock.availableUnits > 0 
-                                ? "bg-slate-900 hover:bg-blue-600 text-white shadow-md hover:shadow-blue-500/20" 
-                                : "cursor-not-allowed opacity-40"
-                              }`}
-                              disabled={stock.availableUnits <= 0}
-                              onClick={() => handleAddToCart(product, stock)}
-                            >
-                              {isSoldOut ? (
-                                'Sold Out'
-                              ) : isFullyReserved ? (
-                                'On Hold'
-                              ) : (
-                                <>
-                                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Add to Cart
-                                </>
-                              )}
-                            </Button>
+                            {(session?.user as any)?.role !== 'ADMIN' && (
+                              <Button
+                                size="sm"
+                                variant={stock.availableUnits > 0 ? "default" : "secondary"}
+                                className={`rounded-xl px-5 font-bold transition-all ${
+                                  stock.availableUnits > 0 
+                                  ? "bg-slate-900 hover:bg-blue-600 text-white shadow-md hover:shadow-blue-500/20" 
+                                  : "cursor-not-allowed opacity-40"
+                                }`}
+                                disabled={stock.availableUnits <= 0}
+                                onClick={() => handleAddToCart(product, stock)}
+                              >
+                                {isSoldOut ? (
+                                  'Sold Out'
+                                ) : isFullyReserved ? (
+                                  'On Hold'
+                                ) : (
+                                  <>
+                                    <Plus className="mr-1.5 h-3.5 w-3.5" /> Add to Cart
+                                  </>
+                                )}
+                              </Button>
+                            )}
                           </div>
                         </div>
                       );
