@@ -5,11 +5,14 @@ import prisma from "@/lib/prisma";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, password, name, adminSecret } = body;
+    let { email, password, name, adminSecret } = body;
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
+
+    // Normalize email
+    email = email.toLowerCase().trim();
 
     // Determine role based on admin secret
     let role: 'USER' | 'ADMIN' = 'USER';
