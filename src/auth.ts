@@ -14,33 +14,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log("AUTH_ATTEMPT", { email: credentials?.email });
         if (!credentials?.email || !credentials?.password) {
+          console.log("AUTH_MISSING_CREDENTIALS");
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string }
-        });
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email as string }
+          });
 
-        if (!user || !user.password) {
+          if (!user || !user.password) {
+            console.log("AUTH_USER_NOT_FOUND", { email: credentials.email });
+            return null;
+          }
+
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            console.log("AUTH_INVALID_PASSWORD", { email: credentials.email });
+            return null;
+          }
+
+          console.log("AUTH_SUCCESS", { email: credentials.email });
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          };
+        } catch (error: any) {
+          console.error("AUTH_ERROR", error);
           return null;
         }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        };
       }
     }),
   ],
