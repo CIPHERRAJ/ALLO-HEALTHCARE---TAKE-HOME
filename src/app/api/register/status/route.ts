@@ -9,11 +9,17 @@ export async function GET() {
       where: { role: 'ADMIN' }
     });
 
+    console.log(`Admin status check: ${adminCount} admins found`);
+
     return NextResponse.json({ 
       adminExists: adminCount > 0 
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('ADMIN_STATUS_CHECK_ERROR:', error);
-    return NextResponse.json({ adminExists: false }); 
+    return NextResponse.json({ 
+      adminExists: false, 
+      error: error.message,
+      code: error.code
+    }); 
   }
 }
