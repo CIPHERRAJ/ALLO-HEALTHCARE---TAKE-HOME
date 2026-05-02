@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from "next-auth/react";
-import { Package, Warehouse, LogOut, Loader2, ChevronRight, ShoppingCart, Info, Activity, Globe, Box, ShieldCheck } from "lucide-react";
+import { Package, Warehouse, LogOut, Loader2, ChevronRight, ShoppingCart, Info, Activity, Globe, Box, ShieldCheck, Clock, AlertTriangle } from "lucide-react";
+import { formatDistanceToNow } from 'date-fns';
 
 interface Stock {
   warehouseId: string;
@@ -15,6 +16,7 @@ interface Stock {
   totalUnits: number;
   reservedUnits: number;
   availableUnits: number;
+  earliestExpiry: string | null;
 }
 
 interface Product {
@@ -201,48 +203,85 @@ export default function ProductsPage() {
                        <span className="h-[1px] flex-grow mx-4 bg-slate-100" />
                     </div>
                     
-                    {product.stocks.map((stock) => (
-                      <div key={stock.warehouseId} className="relative group/stock">
-                        <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
-                          <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center group-hover/stock:bg-blue-50 group-hover/stock:border-blue-100 transition-colors">
-                              <Warehouse className="h-5 w-5 text-slate-400 group-hover/stock:text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-slate-800">{stock.warehouseName}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className={`flex h-2 w-2 rounded-full ${stock.availableUnits > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-                                <p className="text-[11px] text-slate-500 font-bold">
-                                  {stock.availableUnits} units ready
-                                </p>
+                    {product.stocks.map((stock) => {
+                      const isSoldOut = stock.totalUnits === 0;
+                      const isFullyReserved = stock.availableUnits === 0 && stock.reservedUnits > 0;
+
+                      return (
+                        <div key={stock.warehouseId} className="relative group/stock">
+                          <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${
+                            isSoldOut ? 'bg-slate-50 border-slate-100 opacity-60' :
+                            isFullyReserved ? 'bg-orange-50/30 border-orange-100' :
+                            'bg-slate-50/50 border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5'
+                          }`}>
+                            <div className="flex items-center gap-4">
+                              <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-colors ${
+                                isSoldOut ? 'bg-slate-200 text-slate-400' :
+                                isFullyReserved ? 'bg-orange-100 text-orange-600' :
+                                'bg-white border border-slate-100 group-hover/stock:bg-blue-50 group-hover/stock:border-blue-100 text-slate-400 group-hover/stock:text-blue-600'
+                              }`}>
+                                <Warehouse className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold text-slate-800">{stock.warehouseName}</p>
+                                <div className="flex flex-col gap-0.5 mt-0.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`flex h-1.5 w-1.5 rounded-full ${
+                                      isSoldOut ? 'bg-slate-400' :
+                                      isFullyReserved ? 'bg-orange-500 animate-pulse' :
+                                      'bg-emerald-500 animate-pulse'
+                                    }`} />
+                                    <p className={`text-[11px] font-bold ${
+                                      isSoldOut ? 'text-slate-400' :
+                                      isFullyReserved ? 'text-orange-600' :
+                                      'text-slate-500'
+                                    }`}>
+                                      {isSoldOut ? 'Sold Out Permanently' :
+                                       isFullyReserved ? 'Temporarily Held' :
+                                       `${stock.availableUnits} units ready`}
+                                    </p>
+                                  </div>
+
+                                  {isFullyReserved && stock.earliestExpiry && (
+                                    <div className="flex items-center gap-1 ml-3.5">
+                                      <Clock className="h-3 w-3 text-orange-400" />
+                                      <p className="text-[9px] font-bold text-orange-400 uppercase tracking-tight">
+                                        Next release {formatDistanceToNow(new Date(stock.earliestExpiry), { addSuffix: true })}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
+
+                            <Button
+                              size="sm"
+                              variant={stock.availableUnits > 0 ? "default" : "secondary"}
+                              className={`rounded-xl px-5 font-bold transition-all ${
+                                stock.availableUnits > 0 
+                                ? "bg-slate-900 hover:bg-blue-600 text-white shadow-md hover:shadow-blue-500/20" 
+                                : "cursor-not-allowed opacity-40"
+                              }`}
+                              disabled={stock.availableUnits <= 0 || !!reservingId}
+                              onClick={() => handleReserve(product.id, stock.warehouseId)}
+                            >
+                              {reservingId === `${product.id}-${stock.warehouseId}` ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : isSoldOut ? (
+                                'Sold Out'
+                              ) : isFullyReserved ? (
+                                'On Hold'
+                              ) : (
+                                <>
+                                  Reserve <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
+                                </>
+                              )}
+                            </Button>
                           </div>
-                          
-                          <Button
-                            size="sm"
-                            variant={stock.availableUnits > 0 ? "default" : "secondary"}
-                            className={`rounded-xl px-5 font-bold transition-all ${
-                              stock.availableUnits > 0 
-                              ? "bg-slate-900 hover:bg-blue-600 text-white shadow-md hover:shadow-blue-500/20" 
-                              : "cursor-not-allowed opacity-40"
-                            }`}
-                            disabled={stock.availableUnits <= 0 || !!reservingId}
-                            onClick={() => handleReserve(product.id, stock.warehouseId)}
-                          >
-                            {reservingId === `${product.id}-${stock.warehouseId}` ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : stock.availableUnits <= 0 ? (
-                              'Depleted'
-                            ) : (
-                              <>
-                                Reserve <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
-                              </>
-                            )}
-                          </Button>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+
                   </div>
                 </div>
               </div>

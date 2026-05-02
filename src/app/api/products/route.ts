@@ -16,6 +16,13 @@ export async function GET() {
             warehouse: true,
           },
         },
+        reservations: {
+          where: {
+            status: 'PENDING',
+            expiresAt: { gt: new Date() }
+          },
+          orderBy: { expiresAt: 'asc' }
+        }
       },
     });
 
@@ -23,13 +30,24 @@ export async function GET() {
       id: product.id,
       name: product.name,
       description: product.description,
-      stocks: product.stocks.map((stock) => ({
-        warehouseId: stock.warehouseId,
-        warehouseName: stock.warehouse.name,
-        totalUnits: stock.totalUnits,
-        reservedUnits: stock.reservedUnits,
-        availableUnits: stock.totalUnits - stock.reservedUnits,
-      })),
+      stocks: product.stocks.map((stock) => {
+        // Find the earliest expiry for this specific warehouse
+        const warehouseReservations = product.reservations.filter(
+          r => r.warehouseId === stock.warehouseId
+        );
+        const earliestExpiry = warehouseReservations.length > 0 
+          ? warehouseReservations[0].expiresAt 
+          : null;
+
+        return {
+          warehouseId: stock.warehouseId,
+          warehouseName: stock.warehouse.name,
+          totalUnits: stock.totalUnits,
+          reservedUnits: stock.reservedUnits,
+          availableUnits: Math.max(0, stock.totalUnits - stock.reservedUnits),
+          earliestExpiry,
+        };
+      }),
     }));
 
     return NextResponse.json(formattedProducts);
