@@ -117,11 +117,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <div className="relative mb-8">
-          <div className="h-20 w-20 rounded-3xl border-[3px] border-slate-100 border-t-blue-600 animate-spin"></div>
-          <ShieldCheck className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-blue-600" />
+        <div className="relative">
+          <div className="h-16 w-16 rounded-full border-4 border-slate-100 border-t-blue-600 animate-spin"></div>
+          <ShieldCheck className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-blue-600" />
         </div>
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">Establishing Secure Node</p>
+        <p className="mt-6 text-slate-600 font-semibold tracking-tight animate-pulse">Establishing Secure Session...</p>
       </div>
     );
   }
