@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,20 @@ async function main() {
   await prisma.stock.deleteMany();
   await prisma.product.deleteMany();
   await prisma.warehouse.deleteMany();
+  await prisma.user.deleteMany();
+
+  // Create Admin User
+  const adminPassword = await bcrypt.hash('AdminPassword123!', 10);
+  await prisma.user.create({
+    data: {
+      name: 'System Administrator',
+      email: 'admin@allo.com',
+      password: adminPassword,
+      role: 'ADMIN',
+    },
+  });
+
+  console.log('Admin user created: admin@allo.com / AdminPassword123!');
 
   // Create Warehouses
   const w1 = await prisma.warehouse.create({
@@ -22,18 +37,21 @@ async function main() {
     data: {
       name: 'Mechanical Keyboard',
       description: 'Tactile, wireless, and RGB backlit.',
+      price: 129.99,
     },
   });
   const p2 = await prisma.product.create({
     data: {
       name: 'Ergonomic Mouse',
       description: 'Vertical design to reduce wrist strain.',
+      price: 89.00,
     },
   });
   const p3 = await prisma.product.create({
     data: {
       name: '4K Monitor',
       description: '32-inch IPS panel with 144Hz refresh rate.',
+      price: 599.50,
     },
   });
 
