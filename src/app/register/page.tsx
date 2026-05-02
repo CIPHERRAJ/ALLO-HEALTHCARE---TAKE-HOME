@@ -15,8 +15,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isAdminRegistration, setIsAdminRegistration] = useState(false);
-  const [adminSecret, setAdminSecret] = useState("");
-  const [adminExists, setAdminExists] = useState(true);
+  const [adminExists, setAdminExists] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -30,7 +29,8 @@ export default function RegisterPage() {
       const data = await res.json();
       setAdminExists(data.adminExists);
     } catch (e) {
-      setAdminExists(true);
+      // If API fails, we'll allow showing the option just in case
+      setAdminExists(false);
     }
   };
 
@@ -50,7 +50,7 @@ export default function RegisterPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password, isAdminRegistration, adminSecret }),
+        body: JSON.stringify({ name, email, password, isAdminRegistration }),
       });
 
       const data = await response.json();
@@ -124,8 +124,9 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div className={`p-4 rounded-xl border transition-all ${isAdminRegistration ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-100'}`}>
-              <div className="flex items-start gap-3">
+            {/* Only show if NO admin exists */}
+            {adminExists === false && (
+              <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
                  <div className="mt-0.5">
                     <input 
                       id="adminMode"
@@ -137,27 +138,10 @@ export default function RegisterPage() {
                  </div>
                  <Label htmlFor="adminMode" className="cursor-pointer">
                     <span className="block font-bold text-blue-900 text-sm">Register as System Administrator</span>
-                    <span className="block text-[11px] text-blue-700/70 font-medium">
-                      {adminExists ? "Requires Admin Secret key" : "No admin detected. Initial setup mode."}
-                    </span>
+                    <span className="block text-[11px] text-blue-700/70 font-medium">No admin detected. This is a one-time setup opportunity.</span>
                  </Label>
               </div>
-
-              {isAdminRegistration && (
-                <div className="mt-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <Label htmlFor="adminSecret" className="text-xs font-semibold text-blue-800 uppercase tracking-wider">Admin Secret Key</Label>
-                  <Input
-                    id="adminSecret"
-                    type="password"
-                    placeholder="Enter secret key..."
-                    className="bg-white border-blue-200 focus-visible:ring-blue-500"
-                    value={adminSecret}
-                    onChange={(e) => setAdminSecret(e.target.value)}
-                    required={isAdminRegistration}
-                  />
-                </div>
-              )}
-            </div>
+            )}
 
             <Button 
               type="submit" 

@@ -13,6 +13,7 @@ export async function GET() {
       adminExists: adminCount > 0 
     });
   } catch (error) {
-    return NextResponse.json({ adminExists: true }); // Default to true on error for safety
+    console.error('ADMIN_STATUS_CHECK_ERROR:', error);
+    return NextResponse.json({ adminExists: false }); 
   }
 }
