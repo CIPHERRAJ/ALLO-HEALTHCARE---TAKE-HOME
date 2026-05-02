@@ -198,7 +198,7 @@ export default function ProductsPage() {
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex-grow">
                         <CardTitle className="text-2xl font-bold text-slate-900">{product.name}</CardTitle>
-                        <p className="text-blue-600 font-black text-xl mt-1 tracking-tight">${product.price.toLocaleString()}</p>
+                        <p className="text-blue-600 font-black text-xl mt-1 tracking-tight">${(product.price ?? 0).toLocaleString()}</p>
                       </div>
                       <ShieldCheck className="h-5 w-5 text-blue-500/30 group-hover:text-blue-500 transition-colors" />
                     </div>

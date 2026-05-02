@@ -185,8 +185,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                 </div>
                 <div className="ml-auto text-right">
                    <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Total Price</p>
-                   <p className="text-2xl font-black text-blue-600">${(reservation.units * reservation.product.price).toLocaleString()}</p>
-                   <p className="text-[10px] text-slate-400 font-bold mt-1">{reservation.units} x ${reservation.product.price.toLocaleString()}</p>
+                   <p className="text-2xl font-black text-blue-600">${(reservation.units * (reservation.product.price ?? 0)).toLocaleString()}</p>
+                   <p className="text-[10px] text-slate-400 font-bold mt-1">{reservation.units} x ${(reservation.product.price ?? 0).toLocaleString()}</p>
                 </div>
               </div>
 

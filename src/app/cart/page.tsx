@@ -183,7 +183,7 @@ export default function CartPage() {
                            </div>
                            <div className="flex items-center gap-1.5">
                               <Package className="h-3.5 w-3.5" />
-                              {res.units} Units • ${(res.units * res.product.price).toLocaleString()}
+                              {res.units} Units • ${(res.units * (res.product.price ?? 0)).toLocaleString()}
                            </div>
                            <div className="text-slate-300">•</div>
                            <div>{formatDistanceToNow(new Date(res.createdAt), { addSuffix: true })}</div>
