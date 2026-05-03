@@ -261,15 +261,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                       {processing ? <Loader2 className="animate-spin h-5 w-5" /> : <CreditCard className="mr-3 h-5 w-5" />}
                       Confirm Purchase
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="h-16 rounded-2xl px-8 font-black text-[10px] uppercase tracking-[0.2em] text-slate-600 hover:text-red-600 hover:bg-red-50 transition-all" 
-                      onClick={handleCancel} 
+                    <Button
+                      variant="ghost"
+                      className="h-16 rounded-2xl px-8 font-black text-[10px] uppercase tracking-[0.2em] text-slate-600 hover:text-red-600 hover:bg-red-50 transition-all"
+                      onClick={handleCancel}
                       disabled={processing}
                     >
-                      Void Hold
-                    </Button>
-                  </div>
+                      Cancel Purchase
+                    </Button>                  </div>
                 ) : (
                   <div className="flex flex-col sm:flex-row gap-4 w-full">
                      <Button 
