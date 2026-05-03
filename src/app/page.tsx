@@ -24,7 +24,9 @@ import {
   ArrowUpRight,
   Zap,
   Bell,
-  Timer
+  Timer,
+  History,
+  X
   } from "lucide-react";
   import { formatDistanceToNow, differenceInSeconds } from 'date-fns';
   import { useCart } from '@/lib/cart-store';
