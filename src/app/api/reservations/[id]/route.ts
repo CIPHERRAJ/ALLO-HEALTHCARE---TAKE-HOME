@@ -11,8 +11,8 @@ export async function GET(
   const { id } = await params;
 
   try {
-    // Trigger lazy cleanup (non-blocking)
-    cleanupExpiredReservations().catch(e => console.error('Lazy cleanup failed in GET reservation:', e));
+    // Trigger cleanup and wait for it to ensure consistent reservation status
+    await cleanupExpiredReservations().catch(e => console.error('Cleanup failed in GET reservation:', e));
 
     const reservation = await prisma.reservation.findUnique({
       where: { id },

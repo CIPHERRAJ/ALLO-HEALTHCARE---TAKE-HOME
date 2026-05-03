@@ -142,7 +142,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const isExpired = timeLeft <= 0 && reservation.status === 'PENDING';

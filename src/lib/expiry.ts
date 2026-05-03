@@ -28,7 +28,7 @@ export async function cleanupExpiredReservations() {
           lt: now_date,
         },
       },
-      take: 20, // Process more in one go
+      take: 100, // Process more in one go
     });
 
     if (expiredReservations.length === 0) return;

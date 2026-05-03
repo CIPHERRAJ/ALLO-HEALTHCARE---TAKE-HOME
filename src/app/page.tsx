@@ -72,7 +72,7 @@ import {
       const res = await fetch('/api/notifications', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
-      if (!Array.isArray(data)) return;
+      if (!Array.isArray(data) || data.length === 0) return;
       
       data.forEach((n: any) => {
         toast.success('Inventory Available', {
@@ -80,6 +80,9 @@ import {
           duration: 10000,
         });
       });
+
+      // Refresh products immediately if we got notifications
+      fetchProducts();
     } catch (e) {
       // Only log errors if we're not in a "failed to fetch" state which can happen during hot reloads
       if (e instanceof Error && e.message !== 'Failed to fetch') {
@@ -89,6 +92,7 @@ import {
   };
 
   useEffect(() => {
+    let shouldRefresh = false;
     const interval = setInterval(() => {
       const newTimers: Record<string, number> = {};
       products.forEach(p => {
@@ -97,14 +101,22 @@ import {
             const seconds = differenceInSeconds(new Date(s.earliestExpiry), new Date());
             if (seconds > 0) {
               newTimers[`${p.id}-${s.warehouseId}`] = seconds;
+            } else if (timers[`${p.id}-${s.warehouseId}`] > 0) {
+              // Timer just hit zero
+              shouldRefresh = true;
             }
           }
         });
       });
       setTimers(newTimers);
+      
+      if (shouldRefresh) {
+        shouldRefresh = false;
+        fetchProducts();
+      }
     }, 1000);
     return () => clearInterval(interval);
-  }, [products]);
+  }, [products, timers]);
 
   const fetchProducts = async () => {
     try {
@@ -173,7 +185,7 @@ import {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   if (loading) {
