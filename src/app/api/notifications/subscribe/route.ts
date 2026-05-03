@@ -15,7 +15,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Product ID and Warehouse ID are required' }, { status: 400 });
     }
 
-    const request = await prisma.notificationRequest.upsert({
+    console.log('NOTIFY_SUBSCRIBE_START', { 
+      userId: (session.user as any).id, 
+      productId, 
+      warehouseId 
+    });
+
+    const request = await (prisma as any).notificationRequest.upsert({
       where: {
         userId_productId_warehouseId: {
           userId: (session.user as any).id,
@@ -25,6 +31,7 @@ export async function POST(req: NextRequest) {
       },
       update: {
         processed: false,
+        notified: false,
         createdAt: new Date(),
       },
       create: {
@@ -34,9 +41,17 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    console.log('NOTIFY_SUBSCRIBE_SUCCESS', { requestId: request.id });
     return NextResponse.json({ message: 'Subscribed to availability notifications', request });
   } catch (error: any) {
-    console.error('NOTIFICATION_SUBSCRIBE_ERROR:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('NOTIFICATION_SUBSCRIBE_ERROR:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    });
+    return NextResponse.json({ 
+      error: 'Internal Server Error', 
+      details: error.message 
+    }, { status: 500 });
   }
 }

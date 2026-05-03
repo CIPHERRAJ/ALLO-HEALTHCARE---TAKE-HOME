@@ -9,7 +9,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const notifications = await prisma.notificationRequest.findMany({
+    console.log('NOTIFICATIONS_CHECK_START', { userId: (session.user as any).id });
+    
+    const notifications = await (prisma as any).notificationRequest.findMany({
       where: {
         userId: (session.user as any).id,
         processed: true,
@@ -23,9 +25,10 @@ export async function GET(req: NextRequest) {
 
     // Mark as notified so they don't pop up again
     if (notifications.length > 0) {
-      await prisma.notificationRequest.updateMany({
+      console.log('NOTIFICATIONS_FOUND', { count: notifications.length });
+      await (prisma as any).notificationRequest.updateMany({
         where: {
-          id: { in: notifications.map(n => n.id) },
+          id: { in: notifications.map((n: any) => n.id) },
         },
         data: {
           notified: true,
@@ -35,7 +38,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(notifications);
   } catch (error: any) {
-    console.error('NOTIFICATIONS_FETCH_ERROR:', error);
+    console.error('NOTIFICATIONS_FETCH_ERROR:', {
+      message: error.message,
+      stack: error.stack
+    });
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

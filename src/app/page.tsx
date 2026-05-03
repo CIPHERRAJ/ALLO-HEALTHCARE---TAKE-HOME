@@ -127,12 +127,19 @@ import {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, warehouseId }),
       });
-      if (!res.ok) throw new Error('Subscription failed');
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.details || data.error || 'Subscription failed');
+      }
+      
       toast.success('Waitlist joined', {
         description: 'We will notify you when this item becomes available.'
       });
-    } catch (error) {
-      toast.error('Could not join waitlist');
+    } catch (error: any) {
+      toast.error('Could not join waitlist', {
+        description: error.message
+      });
     }
   };
 

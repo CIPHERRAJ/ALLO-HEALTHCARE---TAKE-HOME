@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated-client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  RELEASED
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id                   String                @id @default(cuid())
+  name                 String?
+  email                String?               @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?
+  role                 UserRole              @default(USER)
+  accounts             Account[]
+  sessions             Session[]
+  reservations         Reservation[]
+  notificationRequests NotificationRequest[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Product {
+  id                   String                @id @default(cuid())
+  name                 String
+  description          String?
+  price                Float                 @default(0)
+  stocks               Stock[]
+  reservations         Reservation[]
+  notificationRequests NotificationRequest[]
+}
+
+model Warehouse {
+  id                   String                @id @default(cuid())
+  name                 String
+  stocks               Stock[]
+  reservations         Reservation[]
+  notificationRequests NotificationRequest[]
+}
+
+model Stock {
+  productId     String
+  warehouseId   String
+  totalUnits    Int
+  reservedUnits Int    @default(0)
+
+  product   Product   @relation(fields: [productId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@id([productId, warehouseId])
+}
+
+model Reservation {
+  id             String            @id @default(cuid())
+  productId      String
+  warehouseId    String
+  userId         String? // Link to user
+  units          Int
+  status         ReservationStatus @default(PENDING)
+  expiresAt      DateTime
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  idempotencyKey String?           @unique
+
+  product   Product   @relation(fields: [productId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  user      User?     @relation(fields: [userId], references: [id])
+}
+
+model NotificationRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  warehouseId String
+  createdAt   DateTime @default(now())
+  processed   Boolean  @default(false)
+  notified    Boolean  @default(false)
+
+  user      User      @relation(fields: [userId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@unique([userId, productId, warehouseId])
+}
