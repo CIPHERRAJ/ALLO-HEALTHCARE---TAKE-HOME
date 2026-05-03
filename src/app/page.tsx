@@ -20,6 +20,7 @@ import {
   Clock, 
   Settings, 
   Plus, 
+  Minus,
   ArrowUpRight,
   Zap
 } from "lucide-react";
@@ -47,6 +48,7 @@ interface Product {
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
   const router = useRouter();
   const { data: session } = useSession();
   const { addToCart } = useCart();
@@ -68,16 +70,30 @@ export default function ProductsPage() {
     }
   };
 
+  const handleQuantityChange = (productId: string, warehouseId: string, delta: number, max: number) => {
+    const key = `${productId}-${warehouseId}`;
+    const current = selectedQuantities[key] || 1;
+    const next = Math.max(1, Math.min(max, current + delta));
+    setSelectedQuantities(prev => ({ ...prev, [key]: next }));
+  };
+
   const handleAddToCart = (product: Product, stock: Stock) => {
+    const key = `${product.id}-${stock.warehouseId}`;
+    const units = selectedQuantities[key] || 1;
+    
     addToCart({
       productId: product.id,
       productName: product.name,
       warehouseId: stock.warehouseId,
       warehouseName: stock.warehouseName,
       price: product.price,
-      units: 1,
+      units: units,
     });
-    toast.success(`${product.name} allocated to fulfillment queue`);
+    toast.success(`${product.name} allocated to fulfillment queue`, {
+      description: `Secured ${units} units from ${stock.warehouseName}`
+    });
+    // Reset quantity after adding
+    setSelectedQuantities(prev => ({ ...prev, [key]: 1 }));
   };
 
   if (loading) {
@@ -245,21 +261,47 @@ export default function ProductsPage() {
                               </div>
                             </div>
 
-                            {!isAdmin && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className={`h-11 rounded-2xl px-6 text-[10px] font-black uppercase tracking-[0.2em] transition-all ${
-                                  stock.availableUnits > 0 
-                                  ? "text-blue-600 hover:bg-blue-600 hover:text-white" 
-                                  : "text-slate-500 cursor-not-allowed"
-                                }`}
-                                disabled={stock.availableUnits <= 0}
-                                onClick={() => handleAddToCart(product, stock)}
-                              >
-                                {isSoldOut ? 'Void' : isFullyReserved ? 'Wait' : 'Reserve'}
-                              </Button>
-                            )}
+                            <div className="flex items-center gap-3">
+                              {!isAdmin && stock.availableUnits > 0 && (
+                                <div className="flex items-center gap-2 bg-slate-50 rounded-xl border border-slate-100 p-1">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-7 w-7 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-white"
+                                    onClick={() => handleQuantityChange(product.id, stock.warehouseId, -1, stock.availableUnits)}
+                                  >
+                                    <Minus className="h-3 w-3" />
+                                  </Button>
+                                  <span className="text-[10px] font-black w-4 text-center text-slate-900">
+                                    {selectedQuantities[`${product.id}-${stock.warehouseId}`] || 1}
+                                  </span>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-7 w-7 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-white"
+                                    onClick={() => handleQuantityChange(product.id, stock.warehouseId, 1, stock.availableUnits)}
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+
+                              {!isAdmin && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className={`h-11 rounded-2xl px-6 text-[10px] font-black uppercase tracking-[0.2em] transition-all ${
+                                    stock.availableUnits > 0 
+                                    ? "text-blue-600 hover:bg-blue-600 hover:text-white shadow-lg shadow-blue-500/10" 
+                                    : "text-slate-500 cursor-not-allowed"
+                                  }`}
+                                  disabled={stock.availableUnits <= 0}
+                                  onClick={() => handleAddToCart(product, stock)}
+                                >
+                                  {isSoldOut ? 'Void' : isFullyReserved ? 'Wait' : 'Reserve'}
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         );
                       })}

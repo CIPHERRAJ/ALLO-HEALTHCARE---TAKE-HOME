@@ -5,13 +5,13 @@ import { createPortal } from 'react-dom';
 import { useCart } from '@/lib/cart-store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, Trash2, Loader2, Package, Warehouse, ShieldCheck, ArrowRight, Activity, Globe, Zap } from 'lucide-react';
+import { X, Trash2, Loader2, Package, Warehouse, ShieldCheck, ArrowRight, Activity, Globe, Zap, Minus, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
 export function CartSheet() {
   const [isOpen, setIsOpen] = useState(false);
-  const { items, removeFromCart, clearCart, total } = useCart();
+  const { items, removeFromCart, updateQuantity, clearCart, total } = useCart();
   const [isReserving, setIsReserving] = useState(false);
   const router = useRouter();
 
@@ -184,11 +184,30 @@ export function CartSheet() {
                                     {item.warehouseName}
                                  </span>
                                  <span className="hidden lg:block w-1 h-1 rounded-full bg-slate-200" />
-                                 <span className="text-slate-900">{item.units} Units @ ${item.price.toLocaleString()}</span>
+                                 <span className="text-slate-900">@ ${item.price.toLocaleString()}</span>
                               </div>
                            </div>
                            
-                           <div className="text-right shrink-0 ml-2">
+                           <div className="flex flex-col items-end gap-2 shrink-0 ml-2">
+                              <div className="flex items-center gap-2 bg-white rounded-xl border border-slate-100 p-1">
+                                 <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-6 w-6 rounded-lg text-slate-400 hover:text-blue-600"
+                                    onClick={() => updateQuantity(item.productId, item.warehouseId, item.units - 1)}
+                                 >
+                                    <Minus className="h-3 w-3" />
+                                 </Button>
+                                 <span className="text-[10px] font-black w-4 text-center">{item.units}</span>
+                                 <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-6 w-6 rounded-lg text-slate-400 hover:text-blue-600"
+                                    onClick={() => updateQuantity(item.productId, item.warehouseId, item.units + 1)}
+                                 >
+                                    <Plus className="h-3 w-3" />
+                                 </Button>
+                              </div>
                               <p className="text-lg lg:text-xl font-black text-slate-900 tracking-tighter">${(item.price * item.units).toLocaleString()}</p>
                            </div>
                          </div>

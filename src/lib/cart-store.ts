@@ -65,12 +65,24 @@ export const useCart = () => {
     saveCart([]);
   };
 
+  const updateQuantity = (productId: string, warehouseId: string, units: number) => {
+    if (units <= 0) {
+      removeFromCart(productId, warehouseId);
+      return;
+    }
+    const newItems = items.map((i) =>
+      i.productId === productId && i.warehouseId === warehouseId ? { ...i, units } : i
+    );
+    saveCart(newItems);
+  };
+
   const total = items.reduce((acc, item) => acc + item.price * item.units, 0);
 
   return {
     items,
     addToCart,
     removeFromCart,
+    updateQuantity,
     clearCart,
     total,
   };
