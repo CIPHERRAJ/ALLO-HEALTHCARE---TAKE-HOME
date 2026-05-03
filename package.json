@@ -4,19 +4,19 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && npx prisma db seed && next build",
     "start": "next start",
     "lint": "next lint"
   },
   "prisma": {
-    "seed": "node -e \"require('child_process').execSync('node ./node_modules/ts-node/dist/bin.js --compiler-options \\\"{\\\\\\\"module\\\\\\\":\\\\\\\"CommonJS\\\\\\\"}\\\" prisma/seed.ts', {stdio: 'inherit'})\""
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
     "@base-ui/react": "^1.4.1",
     "@prisma/client": "^6.2.1",
     "@upstash/redis": "^1.37.0",
-    "bcryptjs": "^3.0.3",
+    "bcryptjs": "2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
