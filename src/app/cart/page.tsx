@@ -60,6 +60,38 @@ export default function CartPage() {
     }
   };
 
+  const handleExportCSV = () => {
+    if (reservations.length === 0) return;
+    
+    const headers = ['ID', 'Product', 'Warehouse', 'Units', 'Total Price', 'Status', 'Created At'];
+    const rows = reservations.map(res => [
+      res.id,
+      `"${res.product.name}"`,
+      `"${res.warehouse.name}"`,
+      res.units,
+      (res.units * (res.product.price ?? 0)).toFixed(2),
+      res.status,
+      `"${new Date(res.createdAt).toLocaleString()}"`
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `ledger_export_${new Date().getTime()}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success('Ledger exported to CSV');
+  };
+
   const getStatusConfig = (status: string, expiresAt: string) => {
     const isExpired = status === 'PENDING' && new Date(expiresAt) < new Date();
     if (isExpired) return { 
@@ -155,7 +187,11 @@ export default function CartPage() {
             </div>
             
             <div className="flex items-center gap-3">
-               <Button variant="outline" className="h-12 rounded-xl border-slate-100 gap-2 text-[11px] font-black uppercase tracking-widest px-6 shadow-sm">
+               <Button 
+                 variant="outline" 
+                 onClick={handleExportCSV}
+                 className="h-12 rounded-xl border-slate-100 gap-2 text-[11px] font-black uppercase tracking-widest px-6 shadow-sm hover:bg-slate-50 transition-all active:scale-95"
+               >
                   <Download className="h-4 w-4" />
                   Export CSV
                </Button>
