@@ -17,14 +17,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = (credentials?.email as string)?.toLowerCase()?.trim();
         const password = credentials?.password as string;
         
-        console.log("AUTH_ATTEMPT", { email });
-        
-        if (!email || !password) {
-          console.log("AUTH_MISSING_CREDENTIALS");
-          return null;
-        }
+        if (!email || !password) return null;
 
         try {
+          // 1. Fallback: Ensure Admin exists if someone goes straight to login
+          if (email === 'admin@allo.com') {
+             const adminCheck = await prisma.user.findUnique({ where: { email } });
+             if (!adminCheck) {
+                console.log("AUTH_EMERGENCY_INIT_ADMIN");
+                const adminPassword = await bcrypt.hash('AdminPassword123!', 10);
+                await prisma.user.create({
+                  data: {
+                    name: 'System Administrator',
+                    email: 'admin@allo.com',
+                    password: adminPassword,
+                    role: 'ADMIN',
+                  },
+                });
+             }
+          }
+
           const user = await prisma.user.findUnique({
             where: { email }
           });
