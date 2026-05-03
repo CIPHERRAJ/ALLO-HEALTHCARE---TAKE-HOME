@@ -54,7 +54,7 @@ import {
   const [timers, setTimers] = useState<Record<string, number>>({});
   const router = useRouter();
   const { data: session } = useSession();
-  const { addToCart } = useCart();
+  const { items, addToCart } = useCart();
 
   useEffect(() => {
     fetchProducts();
