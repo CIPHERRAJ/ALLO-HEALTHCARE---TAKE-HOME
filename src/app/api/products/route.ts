@@ -8,37 +8,42 @@ export const dynamic = 'force-dynamic';
 
 async function ensureBaseData() {
   try {
-    const userCount = await prisma.user.count();
-    if (userCount > 0) return;
-
-    console.log('INITIALIZING_DATABASE_BASE_DATA');
+    const adminEmail = 'admin@allo.com';
     
-    // Create Admin
-    const adminPassword = await bcrypt.hash('AdminPassword123!', 10);
-    await prisma.user.upsert({
-      where: { email: 'admin@allo.com' },
-      update: {},
-      create: {
-        name: 'System Administrator',
-        email: 'admin@allo.com',
-        password: adminPassword,
-        role: 'ADMIN',
-      },
+    // Check specifically for Admin
+    const existingAdmin = await prisma.user.findUnique({
+      where: { email: adminEmail }
     });
 
-    // Create Warehouses
-    const w1 = await prisma.warehouse.upsert({
-      where: { id: 'cl-warehouse-1' },
-      update: { name: 'Main Warehouse (London)' },
-      create: { id: 'cl-warehouse-1', name: 'Main Warehouse (London)' },
-    });
-    const w2 = await prisma.warehouse.upsert({
-      where: { id: 'cl-warehouse-2' },
-      update: { name: 'East Coast Hub (New York)' },
-      create: { id: 'cl-warehouse-2', name: 'East Coast Hub (New York)' },
-    });
+    if (!existingAdmin) {
+      console.log('SEED_INIT: Admin account missing. Creating...');
+      const adminPassword = await bcrypt.hash('AdminPassword123!', 10);
+      await prisma.user.create({
+        data: {
+          name: 'System Administrator',
+          email: adminEmail,
+          password: adminPassword,
+          role: 'ADMIN',
+        },
+      });
+      console.log('SEED_SUCCESS: Admin account created.');
+    }
 
-    // Create Products
+    // Verify Warehouses
+    const warehouses = [
+      { id: 'cl-warehouse-1', name: 'Main Warehouse (London)' },
+      { id: 'cl-warehouse-2', name: 'East Coast Hub (New York)' },
+    ];
+
+    for (const w of warehouses) {
+      await prisma.warehouse.upsert({
+        where: { id: w.id },
+        update: { name: w.name },
+        create: { id: w.id, name: w.name },
+      });
+    }
+
+    // Verify Products
     const products = [
       { id: 'prod-1', name: 'Mechanical Keyboard', price: 129.99, desc: 'Tactile, wireless, and RGB backlit.' },
       { id: 'prod-2', name: 'Ergonomic Mouse', price: 89.00, desc: 'Vertical design to reduce wrist strain.' },
@@ -48,26 +53,29 @@ async function ensureBaseData() {
     for (const p of products) {
       const product = await prisma.product.upsert({
         where: { id: p.id },
-        update: {},
+        update: { name: p.name, price: p.price, description: p.desc },
         create: { id: p.id, name: p.name, price: p.price, description: p.desc },
       });
 
-      for (const w of [w1, w2]) {
-        await prisma.stock.upsert({
-          where: { productId_warehouseId: { productId: product.id, warehouseId: w.id } },
-          update: {},
-          create: {
-            productId: product.id,
-            warehouseId: w.id,
-            totalUnits: p.id === 'prod-3' ? 2 : 10,
-            reservedUnits: 0
-          }
+      for (const w of warehouses) {
+        const existingStock = await prisma.stock.findUnique({
+          where: { productId_warehouseId: { productId: product.id, warehouseId: w.id } }
         });
+
+        if (!existingStock) {
+          await prisma.stock.create({
+            data: {
+              productId: product.id,
+              warehouseId: w.id,
+              totalUnits: p.id === 'prod-3' ? 2 : 10,
+              reservedUnits: 0
+            }
+          });
+        }
       }
     }
-    console.log('DATABASE_INITIALIZATION_SUCCESS');
   } catch (e) {
-    console.error('DATABASE_INITIALIZATION_FAILED', e);
+    console.error('DATABASE_INITIALIZATION_ERROR:', e);
   }
 }
 
