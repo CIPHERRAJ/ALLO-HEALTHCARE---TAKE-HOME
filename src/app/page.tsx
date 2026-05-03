@@ -51,7 +51,7 @@ export default function ProductsPage() {
   const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
   const router = useRouter();
   const { data: session } = useSession();
-  const { addToCart } = useCart();
+  const { items, addToCart } = useCart();
 
   useEffect(() => {
     fetchProducts();
@@ -135,7 +135,7 @@ export default function ProductsPage() {
                    Admin Terminal
                  </Button>
                )}
-               {!isAdmin && <CartSheet />}
+               {!isAdmin && items.length > 0 && <CartSheet />}
                <Button variant="ghost" onClick={() => router.push('/cart')} className="h-10 text-[11px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 gap-2">
                  <Activity className="h-3.5 w-3.5" />
                  {isAdmin ? 'Audit Trail' : 'Activity'}
