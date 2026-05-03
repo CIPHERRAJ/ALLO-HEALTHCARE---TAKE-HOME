@@ -5,18 +5,6 @@ let lastCleanup = 0;
 const CLEANUP_INTERVAL = 30 * 1000; // 30 seconds
 
 export async function cleanupExpiredReservations() {
-  const now = Date.now();
-
-  // 1. Rate-limit the cleanup to avoid hammering the DB on every request
-  if (redisEnabled) {
-    const lock = await redis.get('cleanup_lock');
-    if (lock) return;
-    await redis.set('cleanup_lock', 'true', { ex: 30 }); // Lock for 30 seconds
-  } else {
-    if (now - lastCleanup < CLEANUP_INTERVAL) return;
-    lastCleanup = now;
-  }
-
   try {
     const now_date = new Date();
 

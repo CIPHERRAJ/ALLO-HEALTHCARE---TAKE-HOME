@@ -92,26 +92,30 @@ import {
   };
 
   useEffect(() => {
-    let shouldRefresh = false;
     const interval = setInterval(() => {
       const newTimers: Record<string, number> = {};
+      let needsRefresh = false;
+
       products.forEach(p => {
         p.stocks.forEach(s => {
           if (s.earliestExpiry) {
             const seconds = differenceInSeconds(new Date(s.earliestExpiry), new Date());
+            const key = `${p.id}-${s.warehouseId}`;
+            
             if (seconds > 0) {
-              newTimers[`${p.id}-${s.warehouseId}`] = seconds;
-            } else if (timers[`${p.id}-${s.warehouseId}`] > 0) {
-              // Timer just hit zero
-              shouldRefresh = true;
+              newTimers[key] = seconds;
+            } else {
+              // If it was > 0 before and now it's 0 or less, we must refresh
+              if (timers[key] > 0) {
+                needsRefresh = true;
+              }
             }
           }
         });
       });
+
       setTimers(newTimers);
-      
-      if (shouldRefresh) {
-        shouldRefresh = false;
+      if (needsRefresh) {
         fetchProducts();
       }
     }, 1000);
