@@ -6,7 +6,12 @@ import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
 
+// Process-level cache to prevent multiple initializations in the same worker
+let isInitialized = false;
+
 async function ensureBaseData() {
+  if (isInitialized) return;
+  
   try {
     const adminEmail = 'admin@allo.com';
     
@@ -74,6 +79,7 @@ async function ensureBaseData() {
         }
       }
     }
+    isInitialized = true;
   } catch (e) {
     console.error('DATABASE_INITIALIZATION_ERROR:', e);
   }
