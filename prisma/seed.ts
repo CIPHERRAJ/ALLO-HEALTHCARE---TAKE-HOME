@@ -4,17 +4,14 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Clean up
-  await prisma.reservation.deleteMany();
-  await prisma.stock.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.warehouse.deleteMany();
-  await prisma.user.deleteMany();
+  console.log('Starting stable seed process...');
 
-  // Create Admin User
+  // 1. Create/Verify Admin User (Safe)
   const adminPassword = await bcrypt.hash('AdminPassword123!', 10);
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email: 'admin@allo.com' },
+    update: {}, // Don't overwrite if exists
+    create: {
       name: 'System Administrator',
       email: 'admin@allo.com',
       password: adminPassword,
@@ -22,50 +19,54 @@ async function main() {
     },
   });
 
-  console.log('Admin user created: admin@allo.com / AdminPassword123!');
+  console.log('Admin user verified: admin@allo.com');
 
-  // Create Warehouses
-  const w1 = await prisma.warehouse.create({
-    data: { name: 'Main Warehouse (London)' },
+  // 2. Create/Verify Warehouses (Safe)
+  const w1 = await prisma.warehouse.upsert({
+    where: { id: 'cl-warehouse-1' },
+    update: { name: 'Main Warehouse (London)' },
+    create: { id: 'cl-warehouse-1', name: 'Main Warehouse (London)' },
   });
-  const w2 = await prisma.warehouse.create({
-    data: { name: 'East Coast Hub (New York)' },
-  });
-
-  // Create Products
-  const p1 = await prisma.product.create({
-    data: {
-      name: 'Mechanical Keyboard',
-      description: 'Tactile, wireless, and RGB backlit.',
-      price: 129.99,
-    },
-  });
-  const p2 = await prisma.product.create({
-    data: {
-      name: 'Ergonomic Mouse',
-      description: 'Vertical design to reduce wrist strain.',
-      price: 89.00,
-    },
-  });
-  const p3 = await prisma.product.create({
-    data: {
-      name: '4K Monitor',
-      description: '32-inch IPS panel with 144Hz refresh rate.',
-      price: 599.50,
-    },
+  const w2 = await prisma.warehouse.upsert({
+    where: { id: 'cl-warehouse-2' },
+    update: { name: 'East Coast Hub (New York)' },
+    create: { id: 'cl-warehouse-2', name: 'East Coast Hub (New York)' },
   });
 
-  // Create Stock
-  await prisma.stock.createMany({
-    data: [
-      { productId: p1.id, warehouseId: w1.id, totalUnits: 10, reservedUnits: 0 },
-      { productId: p1.id, warehouseId: w2.id, totalUnits: 5, reservedUnits: 0 },
-      { productId: p2.id, warehouseId: w1.id, totalUnits: 20, reservedUnits: 0 },
-      { productId: p3.id, warehouseId: w2.id, totalUnits: 2, reservedUnits: 0 },
-    ],
-  });
+  // 3. Create/Verify Products and Initial Stock
+  const baseProducts = [
+    { id: 'prod-1', name: 'Mechanical Keyboard', price: 129.99, desc: 'Tactile, wireless, and RGB backlit.' },
+    { id: 'prod-2', name: 'Ergonomic Mouse', price: 89.00, desc: 'Vertical design to reduce wrist strain.' },
+    { id: 'prod-3', name: '4K Monitor', price: 599.50, desc: '32-inch IPS panel with 144Hz refresh rate.' },
+  ];
 
-  console.log('Seed data created successfully!');
+  for (const p of baseProducts) {
+    const product = await prisma.product.upsert({
+      where: { id: p.id },
+      update: { name: p.name, price: p.price, description: p.desc },
+      create: { id: p.id, name: p.name, price: p.price, description: p.desc },
+    });
+
+    // Seed initial stock only if missing
+    for (const w of [w1, w2]) {
+      const existingStock = await prisma.stock.findUnique({
+        where: { productId_warehouseId: { productId: product.id, warehouseId: w.id } }
+      });
+
+      if (!existingStock) {
+        await prisma.stock.create({
+          data: {
+            productId: product.id,
+            warehouseId: w.id,
+            totalUnits: p.id === 'prod-3' ? 2 : 10,
+            reservedUnits: 0
+          }
+        });
+      }
+    }
+  }
+
+  console.log('Seed data synchronization completed successfully!');
 }
 
 main()
