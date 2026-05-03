@@ -92,6 +92,8 @@ export default function ProductsPage() {
     toast.success(`${product.name} allocated to fulfillment queue`, {
       description: `Secured ${units} units from ${stock.warehouseName}`
     });
+    // Dispatch event to open cart sheet automatically
+    window.dispatchEvent(new Event('open-cart'));
     // Reset quantity after adding
     setSelectedQuantities(prev => ({ ...prev, [key]: 1 }));
   };

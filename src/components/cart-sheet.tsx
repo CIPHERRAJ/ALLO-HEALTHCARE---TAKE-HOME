@@ -15,6 +15,12 @@ export function CartSheet() {
   const [isReserving, setIsReserving] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-cart', handleOpen);
+    return () => window.removeEventListener('open-cart', handleOpen);
+  }, []);
+
   const handleBatchReserve = async () => {
     if (items.length === 0) return;
     
