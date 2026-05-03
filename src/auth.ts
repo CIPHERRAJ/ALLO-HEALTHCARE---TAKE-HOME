@@ -5,7 +5,8 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma as any),
+  // Removed PrismaAdapter to save database connections. 
+  // We use JWT strategy, so we don't need a DB-backed session.
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -20,50 +21,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!email || !password) return null;
 
         try {
-          // 1. Fallback: Ensure Admin exists if someone goes straight to login
-          if (email === 'admin@allo.com') {
-             const adminCheck = await prisma.user.findUnique({ where: { email } });
-             if (!adminCheck) {
-                console.log("AUTH_EMERGENCY_INIT_ADMIN");
-                const adminPassword = await bcrypt.hash('AdminPassword123!', 10);
-                await prisma.user.create({
-                  data: {
-                    name: 'System Administrator',
-                    email: 'admin@allo.com',
-                    password: adminPassword,
-                    role: 'ADMIN',
-                  },
-                });
-             }
-          }
-
+          // Check specifically for Admin
           const user = await prisma.user.findUnique({
             where: { email }
           });
 
-          if (!user) {
-            console.log("AUTH_USER_NOT_FOUND", { email });
-            return null;
-          }
-
-          if (!user.password) {
-            console.log("AUTH_USER_NO_PASSWORD", { email });
+          if (!user || !user.password) {
+            console.log("AUTH_FAILED: User not found or no password", { email });
             return null;
           }
 
           const isPasswordValid = await bcrypt.compare(password, user.password);
 
-          console.log("AUTH_PASSWORD_CHECK", { 
-            email, 
-            isValid: isPasswordValid,
-            hashPrefix: user.password.substring(0, 10) 
-          });
-
           if (!isPasswordValid) {
+            console.log("AUTH_FAILED: Wrong password", { email });
             return null;
           }
 
-          console.log("AUTH_SUCCESS", { email, role: user.role });
           return {
             id: user.id,
             email: user.email,
@@ -71,12 +45,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             role: user.role,
           };
         } catch (error: any) {
-          console.error("AUTH_ERROR", { 
-            email, 
-            message: error.message, 
-            code: error.code,
-            stack: error.stack 
-          });
+          console.error("AUTH_CONNECTION_ERROR", error.message);
+          // Distinguish between invalid credentials and database errors
+          if (error.message.includes('max clients reached') || error.message.includes('connection')) {
+            throw new Error("DATABASE_CONNECTION_ERROR");
+          }
           return null;
         }
       }

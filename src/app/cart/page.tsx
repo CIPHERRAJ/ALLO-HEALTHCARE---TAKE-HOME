@@ -45,11 +45,27 @@ export default function CartPage() {
 
   useEffect(() => {
     fetchReservations();
-    // Auto-polling disabled to prevent database connection saturation
+    
+    // Background synchronization enabled for high-integrity live updates
+    const pollInterval = setInterval(() => {
+      fetchReservations();
+    }, 15000); // Sync every 15 seconds
+
+    return () => clearInterval(pollInterval);
   }, []);
 
   useEffect(() => {
-    // Immediate refresh on timer expiry disabled for connection stability
+    // Immediate refresh on timer expiry for a 'live' ledger experience
+    const checkExpiries = setInterval(() => {
+      const hasExpired = reservations.some(
+        res => res.status === 'PENDING' && new Date(res.expiresAt) < new Date()
+      );
+      if (hasExpired) {
+        fetchReservations();
+      }
+    }, 1000);
+
+    return () => clearInterval(checkExpiries);
   }, [reservations]);
 
   const fetchReservations = async () => {

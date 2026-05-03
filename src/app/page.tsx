@@ -61,8 +61,14 @@ import {
   useEffect(() => {
     fetchProducts();
     checkNotifications();
-    // Aggressive polling disabled to prevent database connection saturation (EMAXCONNSESSION)
-    // Users can refresh manually if needed during the demo
+    
+    // Background synchronization enabled for high-integrity live updates
+    const pollInterval = setInterval(() => {
+      fetchProducts();
+      checkNotifications();
+    }, 15000); // Sync every 15 seconds
+
+    return () => clearInterval(pollInterval);
   }, []);
 
   const checkNotifications = async () => {

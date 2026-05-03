@@ -30,7 +30,11 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        toast.error("Invalid email or password");
+        if (result.error.includes("DATABASE_CONNECTION_ERROR")) {
+          toast.error("Database connection limit reached. Please try again in a few moments.");
+        } else {
+          toast.error("Invalid email or password");
+        }
       } else {
         toast.success("Identity Verified");
         router.push("/");
