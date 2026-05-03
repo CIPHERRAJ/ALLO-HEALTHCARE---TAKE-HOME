@@ -1,7 +1,20 @@
 import { PrismaClient } from './generated-client-v3';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+// Connection pooling optimization for build-time seeding
+// We use DIRECT_URL if available to bypass pgbouncer limits during seed
+const rawUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+const connectionUrl = rawUrl && !rawUrl.includes('connection_limit') 
+  ? `${rawUrl}${rawUrl.includes('?') ? '&' : '?'}connection_limit=1` 
+  : rawUrl;
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: connectionUrl,
+    },
+  },
+});
 
 async function main() {
   console.log('Starting stable seed process...');
