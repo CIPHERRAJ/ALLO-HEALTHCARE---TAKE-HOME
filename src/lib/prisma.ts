@@ -1,28 +1,30 @@
 import { PrismaClient } from '../../prisma/generated-client-v3';
 
 const prismaClientSingleton = () => {
-  let url = process.env.DATABASE_URL;
-  if (url && url.startsWith('postgres') && !url.includes('pgbouncer=true') && !url.includes('statement_cache_size=0')) {
+  let url = process.env.DATABASE_URL || '';
+  
+  // Optimization for serverless: limit connections per function instance
+  if (url && !url.includes('connection_limit')) {
     const separator = url.includes('?') ? '&' : '?';
-    url = `${url}${separator}pgbouncer=true`;
-    process.env.DATABASE_URL = url; // Update env for other parts of the app
-    console.log('Using pgbouncer=true connection URL');
+    url = `${url}${separator}connection_limit=1&pgbouncer=true`;
   }
-  const client = new PrismaClient({
+
+  return new PrismaClient({
     datasources: {
       db: {
         url: url,
       },
     },
   });
-  
-  // Log available models to debug synchronization issues
-  console.log('PRISMA_MODELS_DISCOVERY:', Object.keys(client).filter(k => !k.startsWith('_') && !k.startsWith('$')));
-  
-  return client;
 };
 
-const prisma = prismaClientSingleton();
+declare global {
+  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
+}
+
+const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
 
 export default prisma;
+
+if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma;
 
