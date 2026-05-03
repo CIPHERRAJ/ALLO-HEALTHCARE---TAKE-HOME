@@ -70,19 +70,21 @@ export function CartSheet() {
 
   return (
     <>
-      <Button 
-        variant="ghost" 
-        onClick={() => setIsOpen(true)}
-        className="h-10 text-[11px] font-black uppercase tracking-[0.2em] text-slate-900 hover:bg-slate-50 gap-2 relative group"
-      >
-        <Zap className="h-4 w-4 group-hover:text-blue-600 transition-colors" />
-        Queue
-        {items.length > 0 && (
-          <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
-            {items.length}
-          </span>
-        )}
-      </Button>
+      {items.length > 0 && (
+        <Button 
+          variant="ghost" 
+          onClick={() => setIsOpen(true)}
+          className="h-10 text-[11px] font-black uppercase tracking-[0.2em] text-slate-900 hover:bg-slate-50 gap-2 relative group"
+        >
+          <Zap className="h-4 w-4 group-hover:text-blue-600 transition-colors" />
+          Queue
+          {items.length > 0 && (
+            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
+              {items.length}
+            </span>
+          )}
+        </Button>
+      )}
 
       {isOpen && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 lg:p-12">
