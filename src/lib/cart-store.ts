@@ -12,7 +12,7 @@ export interface CartItem {
 export const useCart = () => {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  useEffect(() => {
+  const loadCart = () => {
     const savedCart = localStorage.getItem('allo-cart');
     if (savedCart) {
       try {
@@ -20,7 +20,20 @@ export const useCart = () => {
       } catch (e) {
         console.error('Failed to parse cart', e);
       }
+    } else {
+      setItems([]);
     }
+  };
+
+  useEffect(() => {
+    loadCart();
+
+    const handleUpdate = () => {
+      loadCart();
+    };
+
+    window.addEventListener('cart-updated', handleUpdate);
+    return () => window.removeEventListener('cart-updated', handleUpdate);
   }, []);
 
   const saveCart = (newItems: CartItem[]) => {
