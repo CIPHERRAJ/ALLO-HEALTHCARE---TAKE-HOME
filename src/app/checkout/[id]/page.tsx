@@ -34,17 +34,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   useEffect(() => {
     if (!reservation || reservation.status !== 'PENDING') return;
 
-    const interval = setInterval(() => {
-      const seconds = differenceInSeconds(new Date(reservation.expiresAt), new Date());
-      setTimeLeft(Math.max(0, seconds));
-      
-      if (seconds <= 0) {
-        clearInterval(interval);
-        fetchReservation();
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
+    // Background auto-refresh disabled for connection stability
   }, [reservation]);
 
   const fetchReservation = async () => {

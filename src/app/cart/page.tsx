@@ -45,28 +45,11 @@ export default function CartPage() {
 
   useEffect(() => {
     fetchReservations();
-    const interval = setInterval(fetchReservations, 30000); // Background refresh every 30s
-    return () => clearInterval(interval);
+    // Auto-polling disabled to prevent database connection saturation
   }, []);
 
   useEffect(() => {
-    // Immediate refresh when a timer expires
-    const timer = setInterval(() => {
-      const now = new Date();
-      const hasExpired = reservations.some(
-        res => res.status === 'PENDING' && new Date(res.expiresAt) <= now
-      );
-      if (hasExpired) {
-        // Find if any are technically expired but not yet reflected in their UI state
-        const needsStateChange = reservations.some(
-          res => res.status === 'PENDING' && new Date(res.expiresAt) <= now
-        );
-        if (needsStateChange) {
-          fetchReservations();
-        }
-      }
-    }, 1000);
-    return () => clearInterval(timer);
+    // Immediate refresh on timer expiry disabled for connection stability
   }, [reservations]);
 
   const fetchReservations = async () => {
