@@ -120,6 +120,27 @@ import {
     setSelectedQuantities(prev => ({ ...prev, [key]: next }));
   };
 
+  const handleAddToCart = (product: Product, stock: Stock) => {
+    const key = `${product.id}-${stock.warehouseId}`;
+    const units = selectedQuantities[key] || 1;
+    
+    addToCart({
+      productId: product.id,
+      productName: product.name,
+      warehouseId: stock.warehouseId,
+      warehouseName: stock.warehouseName,
+      price: product.price,
+      units: units,
+    });
+    toast.success(`${product.name} allocated to fulfillment queue`, {
+      description: `Secured ${units} units from ${stock.warehouseName}`
+    });
+    // Dispatch event to open cart sheet automatically
+    window.dispatchEvent(new Event('open-cart'));
+    // Reset quantity after adding
+    setSelectedQuantities(prev => ({ ...prev, [key]: 1 }));
+  };
+
   const handleNotify = async (productId: string, warehouseId: string) => {
     try {
       const res = await fetch('/api/notifications/subscribe', {
