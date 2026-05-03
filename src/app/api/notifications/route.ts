@@ -9,10 +9,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    console.log('NOTIFICATIONS_CHECK_START', { 
-      userId: (session.user as any).id,
-      availableModels: Object.keys(prisma)
-    });
+    console.log('NOTIFICATIONS_CHECK_START', { userId: (session.user as any).id });
     
     const notifications = await (prisma as any).notificationRequest.findMany({
       where: {

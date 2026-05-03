@@ -18,8 +18,7 @@ export async function POST(req: NextRequest) {
     console.log('NOTIFY_SUBSCRIBE_START', { 
       userId: (session.user as any).id, 
       productId, 
-      warehouseId,
-      availableModels: Object.keys(prisma)
+      warehouseId
     });
 
     const request = await (prisma as any).notificationRequest.upsert({

@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../prisma/generated-client';
+import { PrismaClient } from '../../prisma/generated-client-v3';
 
 const prismaClientSingleton = () => {
   let url = process.env.DATABASE_URL;
@@ -8,13 +8,18 @@ const prismaClientSingleton = () => {
     process.env.DATABASE_URL = url; // Update env for other parts of the app
     console.log('Using pgbouncer=true connection URL');
   }
-  return new PrismaClient({
+  const client = new PrismaClient({
     datasources: {
       db: {
         url: url,
       },
     },
   });
+  
+  // Log available models to debug synchronization issues
+  console.log('PRISMA_MODELS_DISCOVERY:', Object.keys(client).filter(k => !k.startsWith('_') && !k.startsWith('$')));
+  
+  return client;
 };
 
 const prisma = prismaClientSingleton();

@@ -67,10 +67,13 @@ import {
   }, []);
 
   const checkNotifications = async () => {
+    if (!session?.user) return;
     try {
-      const res = await fetch('/api/notifications');
+      const res = await fetch('/api/notifications', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
+      if (!Array.isArray(data)) return;
+      
       data.forEach((n: any) => {
         toast.success('Inventory Available', {
           description: `${n.product.name} is now available at ${n.warehouse.name}!`,
@@ -78,7 +81,10 @@ import {
         });
       });
     } catch (e) {
-      console.error('Failed to check notifications', e);
+      // Only log errors if we're not in a "failed to fetch" state which can happen during hot reloads
+      if (e instanceof Error && e.message !== 'Failed to fetch') {
+        console.error('Notification synchronization error:', e);
+      }
     }
   };
 
