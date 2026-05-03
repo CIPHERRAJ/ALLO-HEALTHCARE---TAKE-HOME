@@ -62,8 +62,17 @@ import {
     const interval = setInterval(() => {
       fetchProducts();
       checkNotifications();
-    }, 30000); // Poll every 30s
-    return () => clearInterval(interval);
+    }, 30000); // Keep 30s for full product sync
+    
+    // Separate faster interval for notifications
+    const notifyInterval = setInterval(() => {
+      checkNotifications();
+    }, 10000); // Check notifications every 10s
+    
+    return () => {
+      clearInterval(interval);
+      clearInterval(notifyInterval);
+    };
   }, []);
 
   const checkNotifications = async () => {
@@ -116,7 +125,8 @@ import {
 
       setTimers(newTimers);
       if (needsRefresh) {
-        fetchProducts();
+        // Trigger both to ensure stock is released and user is notified
+        fetchProducts().then(() => checkNotifications());
       }
     }, 1000);
     return () => clearInterval(interval);
