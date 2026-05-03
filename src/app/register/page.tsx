@@ -17,7 +17,6 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [adminSecret, setAdminSecret] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -37,7 +36,7 @@ export default function RegisterPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password, adminSecret }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await response.json();
@@ -143,37 +142,16 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <div className="relative pt-2 pb-1">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-slate-100" />
-                </div>
-                <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
-                  <span className="bg-white px-3 text-slate-500">Staff Credentials</span>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="adminSecret" className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-1">Administrative Secret (Optional)</Label>
-                <Input
-                  id="adminSecret"
-                  type="password"
-                  placeholder="Enter token for elevated privileges"
-                  value={adminSecret}
-                  onChange={(e) => setAdminSecret(e.target.value)}
-                  className="h-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all text-sm font-medium px-4 border-dashed"
-                />
-              </div>
-
               <Button 
                 type="submit" 
-                className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-blue-600 text-white font-bold text-lg shadow-xl shadow-slate-200 transition-all hover:scale-[1.02] active:scale-[0.98] mt-4" 
+                className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-blue-600 text-white font-bold text-lg shadow-xl shadow-slate-200 transition-all hover:scale-[1.02] active:scale-[0.98] mt-8" 
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <span className="flex items-center justify-center gap-2">
-                    Initialize Account <UserPlus className="h-5 w-5" />
+                    Register <UserPlus className="h-5 w-5" />
                   </span>
                 )}
               </Button>
@@ -184,7 +162,7 @@ export default function RegisterPage() {
             <div className="text-center text-sm font-medium text-slate-500">
               Already have access?{" "}
               <Link href="/login" className="text-blue-600 hover:text-blue-700 font-bold underline-offset-4 hover:underline">
-                Return to Access Terminal
+                Return to Login
               </Link>
             </div>
             

@@ -77,9 +77,8 @@ export default function LoginPage() {
               </div>
               
               <div className="space-y-2">
-                <div className="flex justify-between items-center px-1">
+                <div className="px-1">
                   <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-slate-600">Security Key</Label>
-                  <Link href="#" className="text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:underline">Reset Access</Link>
                 </div>
                 <div className="relative group/pass">
                   <Input
@@ -109,7 +108,7 @@ export default function LoginPage() {
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <span className="flex items-center justify-center gap-2">
-                    Authorize Session <ArrowRight className="h-5 w-5" />
+                    Login <ArrowRight className="h-5 w-5" />
                   </span>
                 )}
               </Button>
@@ -120,7 +119,7 @@ export default function LoginPage() {
             <div className="text-center text-sm font-medium text-slate-500">
               New to the platform?{" "}
               <Link href="/register" className="text-blue-600 hover:text-blue-700 font-bold underline-offset-4 hover:underline">
-                Create Operator Account
+                Create an Account
               </Link>
             </div>
             

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useCart } from '@/lib/cart-store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -94,13 +95,13 @@ export function CartSheet() {
         )}
       </Button>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-          {/* Extreme Backdrop Blur */}
-          <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-[100px] animate-in fade-in duration-700" onClick={() => setIsOpen(false)} />
+      {isOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 lg:p-12 overflow-hidden">
+          {/* Viewport-filling Backdrop Blur */}
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[120px] animate-in fade-in duration-700" onClick={() => setIsOpen(false)} />
           
-          {/* Floating Manifest Card */}
-          <div className="relative w-full max-w-5xl h-[75vh] bg-white rounded-[56px] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.25)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500">
+          {/* Floating Manifest Card - ROOT LEVEL PORTAL CENTERING */}
+          <div className="relative w-full max-w-5xl max-h-[90vh] bg-white rounded-[48px] lg:rounded-[56px] shadow-[0_40px_150px_-20px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 pointer-events-auto">
             
             <div className="flex flex-col lg:flex-row h-full">
                
@@ -116,13 +117,13 @@ export function CartSheet() {
                           <Zap className="h-6 w-6 text-white fill-white" />
                        </div>
                        <div>
-                          <h2 className="text-xl font-black tracking-tight uppercase">MANIFEST</h2>
+                          <h2 className="text-xl font-black tracking-tight uppercase text-white">MANIFEST</h2>
                           <p className="text-[9px] text-blue-400 font-black uppercase tracking-[0.2em] mt-1">SYSTEM v2.4</p>
                        </div>
                     </div>
 
                     <div className="space-y-6">
-                       <h3 className="text-4xl font-black tracking-tight leading-[1.1]">Review <br /><span className="text-slate-500">Allocations.</span></h3>
+                       <h3 className="text-4xl font-black tracking-tight leading-[1.1] text-white">Review <br /><span className="text-slate-500">Allocations.</span></h3>
                        <p className="text-sm text-slate-400 font-medium leading-relaxed max-w-[240px]">
                           Verify units and warehouse nodes before authorizing global lock protocol.
                        </p>
@@ -132,7 +133,7 @@ export function CartSheet() {
                   <div className="relative z-10 space-y-8">
                      <div className="pt-8 border-t border-white/10">
                         <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mb-2">Total Value</p>
-                        <p className="text-5xl font-black tracking-tighter">${total.toLocaleString()}</p>
+                        <p className="text-5xl font-black tracking-tighter text-white">${total.toLocaleString()}</p>
                      </div>
 
                      <Button 
@@ -153,7 +154,7 @@ export function CartSheet() {
 
                {/* Right: Registry Deck */}
                <div className="flex-grow flex flex-col bg-white">
-                  <div className="p-8 lg:p-10 border-b border-slate-50 flex items-center justify-between shrink-0">
+                  <div className="p-8 lg:p-10 border-b border-slate-50 flex items-center justify-between shrink-0 bg-white">
                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-3">
                         <Activity className="h-4 w-4 text-blue-600" />
                         Inventory Registry ({cartItems.length})
@@ -163,7 +164,7 @@ export function CartSheet() {
                      </Button>
                   </div>
 
-                  <div className="flex-grow overflow-y-auto p-8 lg:p-10 space-y-6 scrollbar-hide">
+                  <div className="flex-grow overflow-y-auto p-8 lg:p-10 space-y-6 scrollbar-hide bg-white">
                      {cartItems.length === 0 ? (
                        <div className="h-full flex flex-col items-center justify-center py-20">
                           <Package className="h-16 w-16 text-slate-100 mb-6" />
@@ -222,7 +223,8 @@ export function CartSheet() {
 
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
