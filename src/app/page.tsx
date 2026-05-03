@@ -229,14 +229,6 @@ import {
           
           <div className="flex items-center gap-4 lg:gap-8">
             <div className="hidden lg:flex items-center gap-1 border-r pr-8 border-slate-100">
-               <Button 
-                 variant="ghost" 
-                 onClick={() => { fetchProducts(); checkNotifications(); }} 
-                 className="h-10 text-[11px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 gap-2"
-               >
-                 <Activity className="h-3.5 w-3.5" />
-                 Sync Terminal
-               </Button>
                {isAdmin && (
                  <Button variant="ghost" onClick={() => router.push('/admin')} className="h-10 text-[11px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50/50 gap-2">
                    <Settings className="h-3.5 w-3.5" />
