@@ -39,10 +39,24 @@ export async function POST(
       });
 
       // 2. Update reservation status
-      return await tx.reservation.update({
+      const updated = await tx.reservation.update({
         where: { id },
         data: { status: 'RELEASED' },
       });
+
+      // 3. Mark notification requests as processed
+      await tx.notificationRequest.updateMany({
+        where: {
+          productId: reservation.productId,
+          warehouseId: reservation.warehouseId,
+          processed: false,
+        },
+        data: {
+          processed: true,
+        },
+      });
+
+      return updated;
     }, {
       timeout: 15000 // 15 seconds
     });

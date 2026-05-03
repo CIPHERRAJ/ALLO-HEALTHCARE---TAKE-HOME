@@ -63,6 +63,18 @@ export async function cleanupExpiredReservations() {
             where: { id: r.id },
             data: { status: 'RELEASED' },
           });
+
+          // 4. Mark notification requests as processed (item is now potentially available)
+          await tx.notificationRequest.updateMany({
+            where: {
+              productId: current.productId,
+              warehouseId: current.warehouseId,
+              processed: false,
+            },
+            data: {
+              processed: true,
+            },
+          });
         }
       }
     }, {

@@ -22,40 +22,83 @@ import {
   Plus, 
   Minus,
   ArrowUpRight,
-  Zap
-} from "lucide-react";
-import { formatDistanceToNow } from 'date-fns';
-import { useCart } from '@/lib/cart-store';
-import { CartSheet } from '@/components/cart-sheet';
+  Zap,
+  Bell,
+  Timer
+  } from "lucide-react";
+  import { formatDistanceToNow, differenceInSeconds } from 'date-fns';
+  import { useCart } from '@/lib/cart-store';
+  import { CartSheet } from '@/components/cart-sheet';
 
-interface Stock {
+  interface Stock {
   warehouseId: string;
   warehouseName: string;
   totalUnits: number;
   reservedUnits: number;
   availableUnits: number;
   earliestExpiry: string | null;
-}
+  }
 
-interface Product {
+  interface Product {
   id: string;
   name: string;
   description: string;
   stocks: Stock[];
   price: number;
-}
+  }
 
-export default function ProductsPage() {
+  export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
+  const [timers, setTimers] = useState<Record<string, number>>({});
   const router = useRouter();
   const { data: session } = useSession();
-  const { items, addToCart } = useCart();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     fetchProducts();
+    checkNotifications();
+    const interval = setInterval(() => {
+      fetchProducts();
+      checkNotifications();
+    }, 30000); // Poll every 30s
+    return () => clearInterval(interval);
   }, []);
+
+  const checkNotifications = async () => {
+    try {
+      const res = await fetch('/api/notifications');
+      if (!res.ok) return;
+      const data = await res.json();
+      data.forEach((n: any) => {
+        toast.success('Inventory Available', {
+          description: `${n.product.name} is now available at ${n.warehouse.name}!`,
+          duration: 10000,
+        });
+      });
+    } catch (e) {
+      console.error('Failed to check notifications', e);
+    }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newTimers: Record<string, number> = {};
+      products.forEach(p => {
+        p.stocks.forEach(s => {
+          if (s.earliestExpiry) {
+            const seconds = differenceInSeconds(new Date(s.earliestExpiry), new Date());
+            if (seconds > 0) {
+              newTimers[`${p.id}-${s.warehouseId}`] = seconds;
+            }
+          }
+        });
+      });
+      setTimers(newTimers);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [products]);
 
   const fetchProducts = async () => {
     try {
@@ -77,25 +120,26 @@ export default function ProductsPage() {
     setSelectedQuantities(prev => ({ ...prev, [key]: next }));
   };
 
-  const handleAddToCart = (product: Product, stock: Stock) => {
-    const key = `${product.id}-${stock.warehouseId}`;
-    const units = selectedQuantities[key] || 1;
-    
-    addToCart({
-      productId: product.id,
-      productName: product.name,
-      warehouseId: stock.warehouseId,
-      warehouseName: stock.warehouseName,
-      price: product.price,
-      units: units,
-    });
-    toast.success(`${product.name} allocated to fulfillment queue`, {
-      description: `Secured ${units} units from ${stock.warehouseName}`
-    });
-    // Dispatch event to open cart sheet automatically
-    window.dispatchEvent(new Event('open-cart'));
-    // Reset quantity after adding
-    setSelectedQuantities(prev => ({ ...prev, [key]: 1 }));
+  const handleNotify = async (productId: string, warehouseId: string) => {
+    try {
+      const res = await fetch('/api/notifications/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, warehouseId }),
+      });
+      if (!res.ok) throw new Error('Subscription failed');
+      toast.success('Waitlist joined', {
+        description: 'We will notify you when this item becomes available.'
+      });
+    } catch (error) {
+      toast.error('Could not join waitlist');
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   if (loading) {
@@ -242,6 +286,8 @@ export default function ProductsPage() {
                       {product.stocks.map((stock) => {
                         const isSoldOut = stock.totalUnits === 0;
                         const isFullyReserved = stock.availableUnits === 0 && stock.reservedUnits > 0;
+                        const timerKey = `${product.id}-${stock.warehouseId}`;
+                        const secondsLeft = timers[timerKey];
 
                         return (
                           <div key={stock.warehouseId} className="flex items-center justify-between group/stock border-b border-slate-50 pb-4 last:border-0 last:pb-0">
@@ -254,16 +300,28 @@ export default function ProductsPage() {
                                 <div className="flex items-center gap-2">
                                   <span className={`w-1.5 h-1.5 rounded-full ${
                                     isSoldOut ? 'bg-slate-300' :
-                                    isFullyReserved ? 'bg-orange-400' : 'bg-emerald-500'
+                                    isFullyReserved ? 'bg-orange-400 animate-pulse' : 'bg-emerald-500'
                                   }`} />
                                   <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-                                    {isSoldOut ? 'Depleted' : isFullyReserved ? 'Held' : `${stock.availableUnits} Active`}
+                                    {isSoldOut ? 'Depleted' : isFullyReserved ? `Held (${formatTime(secondsLeft || 0)})` : `${stock.availableUnits} Active`}
                                   </p>
                                 </div>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-3">
+                              {!isAdmin && isFullyReserved && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-11 rounded-2xl px-4 text-orange-600 hover:bg-orange-50 gap-2 text-[9px] font-black uppercase tracking-widest"
+                                  onClick={() => handleNotify(product.id, stock.warehouseId)}
+                                >
+                                  <Bell className="h-3.5 w-3.5" />
+                                  Notify
+                                </Button>
+                              )}
+
                               {!isAdmin && stock.availableUnits > 0 && (
                                 <div className="flex items-center gap-2 bg-slate-50 rounded-xl border border-slate-100 p-1">
                                   <Button 
